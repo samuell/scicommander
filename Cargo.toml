@@ -8,6 +8,13 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 
+[profile.release]
+opt-level = "z"
+lto = true # 13M -> 4.8M
+codegen-units = 1 # ...
+panic = "abort" # 4.8M -> 4.7M
+strip = true # 4.7M -> 515K
+
 [[bin]]
 name = "scicmd"
 path = "src/main.rs"
