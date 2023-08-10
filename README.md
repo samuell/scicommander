@@ -10,8 +10,8 @@ more reproducible and robust way, by doing the following things:
 
 It allows executing shell commands with very minor modifications:
 
-1. Prepend your command with the `sciexec` command.
-2. Wrap definitions of input fiels in `{i:INPATH}` and output files in
+1. Prepend your command with the `scicmd` command.
+2. Wrap definitions of input fields in `{i:INPATH}` and output files in
    `{o:OUTPATH}` for output paths.
 
 The benefits are multiple:
