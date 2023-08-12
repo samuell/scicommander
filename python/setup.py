@@ -35,4 +35,9 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
+    entry_points={
+        "console_scripts": [
+            "scicmd=scicommander.scicmd:main",
+        ],
+    },
 )
