@@ -14,6 +14,7 @@ setup(
     version="0.1.0",
     description="A small library for executing shell commands in a reproducible way.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Samuel Lampa",
     author_email="samuel.lampa@scilifelab.se",
     url="https://github.com/samuell/scicommander",
