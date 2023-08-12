@@ -3,11 +3,13 @@ import json
 import os
 import subprocess
 
+base_cmd = "python scicommander/scicmd.py"
+
 
 def test_create_file():
     tmpdir = ".tmp.scicmd-test-create-file"
     os.makedirs(tmpdir, exist_ok=True)
-    cmd = f"python scicmd.py -c 'echo hej > o:{tmpdir}/hej.txt'"
+    cmd = f"{base_cmd} -c 'echo hej > o:{tmpdir}/hej.txt'"
     run_command(cmd)
 
     # Make sure everything is as it should
@@ -22,9 +24,9 @@ def test_create_file():
 def test_create_two_files():
     tmpdir = ".tmp.scicmd-test-create-two-files"
     os.makedirs(tmpdir, exist_ok=True)
-    cmd1 = f"python scicmd.py -c 'echo hej > o:{tmpdir}/hej.txt'"
+    cmd1 = f"{base_cmd} -c 'echo hej > o:{tmpdir}/hej.txt'"
     run_command(cmd1)
-    cmd2 = f"python scicmd.py -c 'echo $(cat i:{tmpdir}/hej.txt) da > o:{tmpdir}/hej.da.txt'"
+    cmd2 = f"{base_cmd} -c 'echo $(cat i:{tmpdir}/hej.txt) da > o:{tmpdir}/hej.da.txt'"
     run_command(cmd2)
 
     # Make sure everything is as it should
