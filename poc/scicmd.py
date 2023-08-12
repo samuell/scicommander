@@ -9,17 +9,65 @@ import subprocess as sub
 
 # Define commandline arguments
 argp = argparse.ArgumentParser()
-argp.add_argument("--command", "-c", nargs="...", required=True)
 argp.add_argument(
     "--merge-audit-files",
     "-m",
     action="store_true",
     help="Whether to merge in upstream audit files, to create fully self-contained audit trails",
 )
+argp.add_argument("--command", "-c", nargs="...")
+argp.add_argument("--to-html", "-th", metavar="AUDIT_FILE")
 args = argp.parse_args()
 
 
 def main(args):
+    if not args.command and not args.to_html:
+        argp.print_usage()
+        print("Either --command or --to-html must be specified!")
+        return
+
+    if args.to_html:
+        audit_path = args.to_html
+        print(f"Generating report for Audit file: {audit_path}")
+        with open(audit_path) as aifile:
+            ai = json.load(aifile)
+        tasks = []
+
+        def add_input_audit_files(ai):
+            for input_path in ai["inputs"]:
+                input_audit_path = f"{input_path}.au.json"
+                if not os.path.isfile(input_audit_path):
+                    return
+
+                with open(input_audit_path) as iaupath:
+                    upstream = json.load(iaupath)
+                tasks.append(upstream)
+                add_input_audit_files(upstream)
+
+        tasks.append(ai)
+        add_input_audit_files(ai)
+
+        html = ""
+
+        tasks.sort(key=lambda x: x["start_time"])
+
+        html += "<html><body style='font-family:monospace, courier new'>"
+        html += "<h1>SciCommander Audit Report<h1>"
+        html += "<hr>"
+        html += "<table borders='none' cellpadding='8px'>"
+        html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>"
+        for task in tasks:
+            html += f"<tr><td>{task['start_time']}</td><td style='background: #efefef;'>{task['command']}</td><td>{task['duration']}</tr>\n"
+        html += "</table>"
+        html += "<hr>"
+        html += "</body></html>"
+
+        html_path = audit_path.replace(".au.json", ".au.html")
+        with open(html_path, "w") as htmlfile:
+            htmlfile.write(html)
+
+        return
+
     command = " ".join(args.command)
 
     # Capture input paths
