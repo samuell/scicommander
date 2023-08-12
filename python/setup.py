@@ -6,7 +6,7 @@ try:
 except:
     from distutils.core import setup
 
-with open("README.md") as fobj:
+with open("../README.md") as fobj:
     long_description = fobj.read()
 
 setup(
