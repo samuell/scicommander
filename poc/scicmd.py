@@ -8,11 +8,11 @@ import subprocess as sub
 
 # Define commandline arguments
 argp = argparse.ArgumentParser()
-argp.add_argument("--command", "-c", required=True)
+argp.add_argument("--command", "-c", nargs="...", required=True)
 args = argp.parse_args()
 
 def main():
-    command = args.command
+    command = " ".join(args.command)
 
     # Capture input paths
     input_paths = []
@@ -45,7 +45,7 @@ def main():
 
 
 def write_audit_files(command, input_paths, output_paths):
-    audit_extension = ".aud.json"
+    audit_extension = ".audit"
 
     audit_info = {
         "command": command,
@@ -56,14 +56,14 @@ def write_audit_files(command, input_paths, output_paths):
 
     # Merge input audits into the final one
     for path in input_paths:
-        audit_path = f"{path}.au.json"
+        audit_path = f"{path}.audit"
         if os.path.exists(path):
             with open(audit_path) as audit_f:
                 upstream_audit_info = json.load(audit_f)
             audit_info["upstream"][path] = upstream_audit_info
 
     for path in output_paths:
-        audit_path = f"{path}.au.json"
+        audit_path = f"{path}.audit"
         with open(audit_path, "w") as audit_f:
             json.dump(audit_info, audit_f, indent=2)
 
