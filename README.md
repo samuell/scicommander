@@ -9,6 +9,15 @@ more reproducible and robust way, by doing the following things:
 - (Coming soon): Atomic writes - Writes files to a temporary location until
   command is finished
 
+## Requirements
+
+- A unix like operating system such as Linux or Mac OS (On Windows you can use
+  [WSL](https://learn.microsoft.com/en-us/windows/wsl/about) or [MSYS2](https://www.msys2.org/))
+- Python 3.6 or higher
+- A bash shell
+- For graph plotting for the HTML report, you need
+  [GraphViz](https://graphviz.org/) and its `dot` command.
+
 ## Installation
 
 ```bash
