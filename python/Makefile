@@ -4,3 +4,6 @@ build: setup.py
 
 upload: dist
 	twine upload dist/*
+
+clean:
+	rm -rf dist/
