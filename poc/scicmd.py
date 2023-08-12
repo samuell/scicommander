@@ -26,46 +26,10 @@ def main(args):
         print("Either --command or --to-html must be specified!")
         return
 
+    # Only write HTML report and finish
     if args.to_html:
         audit_path = args.to_html
-        print(f"Generating report for Audit file: {audit_path}")
-        with open(audit_path) as aifile:
-            ai = json.load(aifile)
-        tasks = []
-
-        def add_input_audit_files(ai):
-            for input_path in ai["inputs"]:
-                input_audit_path = f"{input_path}.au.json"
-                if not os.path.isfile(input_audit_path):
-                    return
-
-                with open(input_audit_path) as iaupath:
-                    upstream = json.load(iaupath)
-                tasks.append(upstream)
-                add_input_audit_files(upstream)
-
-        tasks.append(ai)
-        add_input_audit_files(ai)
-
-        html = ""
-
-        tasks.sort(key=lambda x: x["start_time"])
-
-        html += "<html><body style='font-family:monospace, courier new'>"
-        html += "<h1>SciCommander Audit Report<h1>"
-        html += "<hr>"
-        html += "<table borders='none' cellpadding='8px'>"
-        html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>"
-        for task in tasks:
-            html += f"<tr><td>{task['start_time']}</td><td style='background: #efefef;'>{task['command']}</td><td>{task['duration']}</tr>\n"
-        html += "</table>"
-        html += "<hr>"
-        html += "</body></html>"
-
-        html_path = audit_path.replace(".au.json", ".au.html")
-        with open(html_path, "w") as htmlfile:
-            htmlfile.write(html)
-
+        write_html_report(audit_path)
         return
 
     command = " ".join(args.command)
@@ -107,6 +71,53 @@ def main(args):
         end_time,
         args.merge_audit_files,
     )
+
+
+def collect_audit_info(audit_path):
+    with open(audit_path) as aifile:
+        ai = json.load(aifile)
+    tasks = []
+
+    def add_input_audit_files(ai):
+        for input_path in ai["inputs"]:
+            input_audit_path = f"{input_path}.au.json"
+            if not os.path.isfile(input_audit_path):
+                return
+
+            with open(input_audit_path) as iaupath:
+                upstream = json.load(iaupath)
+            tasks.append(upstream)
+            add_input_audit_files(upstream)
+
+    tasks.append(ai)
+    add_input_audit_files(ai)
+    tasks.sort(key=lambda x: x["start_time"])
+    return tasks
+
+
+def write_html_report(audit_path):
+    print(f"Generating report for Audit file: {audit_path}")
+
+    tasks = collect_audit_info(audit_path)
+
+    html = ""
+    html += "<html><body style='font-family:monospace, courier new'>"
+    html += "<h1>SciCommander Audit Report<h1>"
+    html += "<hr>"
+    html += "<table borders='none' cellpadding='8px'>"
+    html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>"
+    for task in tasks:
+        html += f"<tr><td>{task['start_time']}</td><td style='background: #efefef;'>{task['command']}</td><td>{task['duration']}</tr>\n"
+    html += "</table>"
+    html += "<hr>"
+    html += "</body></html>"
+
+    html_path = audit_path.replace(".au.json", ".au.html")
+    with open(html_path, "w") as htmlfile:
+        htmlfile.write(html)
+    # Open html file in browser
+    print(f"Trying to open HTML file in browser: {html_path} ...")
+    sub.run(f"open {html_path}", shell=True)
 
 
 def write_audit_files(
