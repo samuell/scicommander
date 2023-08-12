@@ -224,7 +224,7 @@ def execute_command(command):
 
 
 def get_input_matches(text):
-    pattern = re.compile("(\{i\:([^\{\}]+)\}|i\:([a-z\.\-\/]+))")
+    pattern = re.compile("(\{i\:([^\{\}]+)\}|i\:([^\s\(\)]+))")
     matches = pattern.findall(text)
     inputs = []
     for m in matches:
@@ -238,7 +238,7 @@ def get_input_matches(text):
 
 
 def get_output_matches(text):
-    pattern = re.compile("(\{o\:([^\{\}]+)\}|o\:([a-z\.\-\/]+))")
+    pattern = re.compile("(\{o\:([^\{\}]+)\}|o\:([^\s\(\)]+))")
     matches = pattern.findall(text)
     outputs = []
     for m in matches:
