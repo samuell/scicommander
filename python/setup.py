@@ -18,7 +18,7 @@ setup(
     author_email="samuel.lampa@scilifelab.se",
     url="https://github.com/samuell/scicommander",
     license="MIT",
-    keywords="reproducibility", "shell", "bash",
+    keywords=["reproducibility", "shell", "bash"],
     packages=[
         "scicommander",
     ],

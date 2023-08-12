@@ -20,7 +20,7 @@ argp.add_argument("--to-html", "-th", metavar="AUDIT_FILE")
 args = argp.parse_args()
 
 
-def main(args):
+def main():
     if not args.command and not args.to_html:
         argp.print_usage()
         print("Either --command or --to-html must be specified!")
@@ -252,4 +252,4 @@ def get_output_matches(text):
 
 
 if __name__ == "__main__":
-    main(args)
+    main()
