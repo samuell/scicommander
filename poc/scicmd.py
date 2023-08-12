@@ -41,12 +41,9 @@ def main(args):
             return
 
     # Replace placeholders with only the path
-    print(f"Command before replace: {command}")
     matches = input_matches + output_matches
     for ph, path in matches:
-        print(f"Replacing {ph} with {path}")
         command = command.replace(ph, path)
-    print(f"Command after replace: {command}")
 
     # Execute command
     start_time = dt.datetime.now()
