@@ -114,7 +114,7 @@ To convert this file to HTML and view it in a browser, you can do:
 scicmd --to-html dna.compl.rev.fa.au.json
 ```
 
-Then you will see [this following HTML page](https://raw.githubusercontent.com/samuell/scicommander/python/examples/dna.compl.rev.fa.au.html).
+Then you will see [an HTML page like this](https://htmlpreview.github.io/?https://github.com/samuell/scicommander/blob/main/python/examples/dna.compl.rev.fa.au.html)
 
 ## Notes
 
