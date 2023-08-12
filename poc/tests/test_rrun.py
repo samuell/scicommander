@@ -5,6 +5,7 @@ import subprocess
 
 def test_create_audit_file():
     outpath = ".tmp.hej.txt"
+    #audit_path = f"{outpath}.audit.json"
     stdout, stderr, retcode = run_command(f"echo hej > {outpath}")
     print(
         f"""
