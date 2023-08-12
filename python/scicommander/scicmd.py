@@ -134,7 +134,7 @@ def write_html_report(tasks, audit_path):
     with open(dot_path, "w") as dotfile:
         dotfile.write(dot)
 
-    sub.run(f'dot -Tsvg {dot_path} > {svg_path}', shell=True)
+    sub.run(f"dot -Tsvg {dot_path} > {svg_path}", shell=True)
 
     with open(svg_path) as svg_file:
         svg = svg_file.read().strip()
