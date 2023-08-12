@@ -49,7 +49,72 @@ To convert such an audit report into a nice HTML-report, run the following:
 
 ```bash
 scicmd --to-html <audit-file>
+
 ```
+
+## Example
+
+To demonstrate how you can use SciCommander, imagine that you want to write the
+following little bioinformatics pipeline, that writes some DNA and converts its
+reverse complement, as a shell script, `my_pipeline.sh`:
+
+```bash
+#!/bin/bash
+
+# Create a fasta file with some DNA
+echo AAAGCCCGTGGGGGACCTGTTC > o:dna.fa
+# Compute the complement sequence
+cat i:dna.fa | tr ACGT TGCA > o:dna.compl.fa
+# Reverse the DNA string
+cat i:dna.compl.fa | rev > o:dna.compl.rev.fa
+```
+Now, to make the commands run through SciCommander, change the syntax in the
+script like this:
+
+```bash
+#!/bin/bash
+
+# Create a fasta file with some DNA
+scicmd -c echo AAAGCCCGTGGGGGACCTGTTC '>' o:dna.fa
+# Compute the complement sequence
+scicmd -c cat i:dna.fa '|' tr ACGT TGCA '>' o:dna.compl.fa
+# Reverse the DNA string
+scicmd -c cat i:dna.compl.fa '|' rev '>' o:dna.compl.rev.fa
+```
+
+Notice how all input paths are prepended with `i:` and output paths with `o:`,
+and also that we had to wrap all pipe characters (`|`) and redirection
+characters (`>`) in quotes. This is so that they are not grabbed by bash
+immediately, but instead passed with the command to SciCommander, and executed
+as part of its execution.
+
+Now you can run the script as usual, e.g. with:
+
+```bash
+bash my_pipeline.sh
+```
+
+Now, the files in your folder will look like this, if you list them with `ls -tr`:
+
+```bash
+my_pipeline.sh
+dna.fa.au.json
+dna.fa
+dna.compl.fa.au.json
+dna.compl.fa
+dna.compl.rev.fa.au.json
+dna.compl.rev.fa
+```
+
+Now, you see that the last `.au.json` file is `dna.compl.rev.fa.au.json`.
+
+To convert this file to HTML and view it in a browser, you can do:
+
+```bash
+scicmd --to-html dna.compl.rev.fa.au.json
+```
+
+Then you will see [this following HTML page](https://raw.githubusercontent.com/samuell/scicommander/python/examples/dna.compl.rev.fa.au.html).
 
 ## Notes
 
