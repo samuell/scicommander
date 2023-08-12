@@ -9,9 +9,16 @@ import subprocess as sub
 # Define commandline arguments
 argp = argparse.ArgumentParser()
 argp.add_argument("--command", "-c", nargs="...", required=True)
+argp.add_argument(
+    "--merge-audit-files",
+    "-m",
+    action="store_true",
+    help="Whether to merge in upstream audit files, to create fully self-contained audit trails",
+)
 args = argp.parse_args()
 
-def main():
+
+def main(args):
     command = " ".join(args.command)
 
     # Capture input paths
@@ -33,19 +40,22 @@ def main():
             return
 
     # Replace placeholders with only the path
+    print(f"Command before replace: {command}")
     matches = input_matches + output_matches
     for ph, path in matches:
+        print(f"Replacing {ph} with {path}")
         command = command.replace(ph, path)
+    print(f"Command after replace: {command}")
 
     # Execute command
     stdout, stderr, retcode = execute_command(command)
 
     # Write AuditInfo file(s)
-    write_audit_files(command, input_paths, output_paths)
+    write_audit_files(command, input_paths, output_paths, args.merge_audit_files)
 
 
-def write_audit_files(command, input_paths, output_paths):
-    audit_extension = ".audit"
+def write_audit_files(command, input_paths, output_paths, merge_audit_files):
+    audit_extension = ".au.json"
 
     audit_info = {
         "command": command,
@@ -55,15 +65,16 @@ def write_audit_files(command, input_paths, output_paths):
     }
 
     # Merge input audits into the final one
-    for path in input_paths:
-        audit_path = f"{path}.audit"
-        if os.path.exists(path):
-            with open(audit_path) as audit_f:
-                upstream_audit_info = json.load(audit_f)
-            audit_info["upstream"][path] = upstream_audit_info
+    if merge_audit_files:
+        for path in input_paths:
+            audit_path = f"{path}.au.json"
+            if os.path.exists(path):
+                with open(audit_path) as audit_f:
+                    upstream_audit_info = json.load(audit_f)
+                audit_info["upstream"][path] = upstream_audit_info
 
     for path in output_paths:
-        audit_path = f"{path}.audit"
+        audit_path = f"{path}.au.json"
         with open(audit_path, "w") as audit_f:
             json.dump(audit_info, audit_f, indent=2)
 
@@ -102,7 +113,7 @@ def get_input_matches(text):
 
 
 def get_output_matches(text):
-    pattern = re.compile("(\{o\:([^\{\}]+)\}|o\:([^\s]+))")
+    pattern = re.compile("(\{o\:([^\{\}]+)\}|o\:([^\ ]+))")
     matches = pattern.findall(text)
     outputs = []
     for m in matches:
@@ -116,4 +127,4 @@ def get_output_matches(text):
 
 
 if __name__ == "__main__":
-    main()
+    main(args)

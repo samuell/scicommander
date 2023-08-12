@@ -1,20 +1,17 @@
 from pytest import fail
-from os import path
+import os
 import subprocess
 
 
-def test_create_audit_file():
-    outpath = ".tmp.hej.txt"
-    #audit_path = f"{outpath}.au.json"
-    stdout, stderr, retcode = run_command(f"echo hej > {outpath}")
-    print(
-        f"""
-    STDOUT: {stdout}
-    STDERR: {stderr}
-    RETCOD: {retcode}
-    """
-    )
-    assert path.isfile(outpath)
+def test_create_file():
+    tmpdir = ".tmp.scicmd-test"
+    os.makedirs(tmpdir, exist_ok=True)
+    cmd = f"python scicmd.py -c 'echo hej > o:{tmpdir}/hej.txt'"
+    run_command(cmd)
+    assert os.path.isfile(f"{tmpdir}/hej.txt")
+    os.remove(f"{tmpdir}/hej.txt")
+    os.remove(f"{tmpdir}/hej.txt.au.json")
+    os.removedirs(tmpdir)
 
 
 def run_command(command):
