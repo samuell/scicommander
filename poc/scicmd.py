@@ -29,7 +29,8 @@ def main(args):
     # Only write HTML report and finish
     if args.to_html:
         audit_path = args.to_html
-        write_html_report(audit_path)
+        tasks = collect_audit_info(audit_path)
+        write_html_report(tasks, audit_path)
         return
 
     command = " ".join(args.command)
@@ -73,6 +74,36 @@ def main(args):
     )
 
 
+def generate_dot_graph(tasks):
+    nodes, edges = generate_graph(tasks)
+
+    dot = "DIGRAPH G {\n"
+    dot += "  node [shape=box, style=filled, fillcolor=lightgrey, fontname=monospace, penwidth=0];"
+    for node in nodes:
+        dot += f' "{node}"\n'
+    for edge in edges:
+        dot += f'  "{edge[0]}" -> "{edge[1]}"\n'
+    dot += "}"
+
+    return dot
+
+
+def generate_graph(tasks):
+    nodes = []
+    edges = []
+    for task in tasks:
+        nodes.append(task["command"])
+        for outpath in task["outputs"]:
+            edges.append((task["command"], outpath))
+            nodes.append(outpath)
+        for inpath in task["inputs"]:
+            edges.append((inpath, task["command"]))
+            nodes.append(inpath)
+    nodes = set(nodes)
+    edges = set(edges)
+    return nodes, edges
+
+
 def collect_audit_info(audit_path):
     with open(audit_path) as aifile:
         ai = json.load(aifile)
@@ -95,13 +126,18 @@ def collect_audit_info(audit_path):
     return tasks
 
 
-def write_html_report(audit_path):
-    print(f"Generating report for Audit file: {audit_path}")
+def write_html_report(tasks, audit_path):
+    dot = generate_dot_graph(tasks)
+    dot_path = audit_path.replace(".au.json", ".au.dot")
+    png_path = dot_path.replace(".dot", ".png")
 
-    tasks = collect_audit_info(audit_path)
+    with open(dot_path, "w") as dotfile:
+        dotfile.write(dot)
 
-    html = ""
-    html += "<html><body style='font-family:monospace, courier new'>"
+    sub.run(f"dot -Tpng {dot_path} > {png_path}", shell=True)
+
+    html = "<html>"
+    html += "<body style='font-family:monospace, courier new'>"
     html += "<h1>SciCommander Audit Report<h1>"
     html += "<hr>"
     html += "<table borders='none' cellpadding='8px'>"
@@ -110,11 +146,15 @@ def write_html_report(audit_path):
         html += f"<tr><td>{task['start_time']}</td><td style='background: #efefef;'>{task['command']}</td><td>{task['duration']}</tr>\n"
     html += "</table>"
     html += "<hr>"
-    html += "</body></html>"
+    html += f'<img src="{png_path}" alt="Execution graph"/>'
+    html += "<hr>"
+    html += "</body>"
+    html += "</html>"
 
     html_path = audit_path.replace(".au.json", ".au.html")
     with open(html_path, "w") as htmlfile:
         htmlfile.write(html)
+
     # Open html file in browser
     print(f"Trying to open HTML file in browser: {html_path} ...")
     sub.run(f"open {html_path}", shell=True)
