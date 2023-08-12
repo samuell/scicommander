@@ -123,7 +123,16 @@ def collect_audit_info(audit_path):
     tasks.append(ai)
     add_input_audit_files(ai)
     tasks.sort(key=lambda x: x["start_time"])
-    return tasks
+
+    # Remove duplicate tasks
+    seen_commands = set()
+    unique_tasks = []
+    for task in tasks:
+        if task["command"] not in seen_commands:
+            seen_commands.add(task["command"])
+            unique_tasks.append(task)
+
+    return unique_tasks
 
 
 def write_html_report(tasks, audit_path):
