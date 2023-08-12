@@ -39,15 +39,19 @@ def test_create_two_files():
         content = outfile2.read().strip()
         assert content == "hej da"
 
+    def compare_some_audit_fields(have, want):
+        for field in ["command", "inputs", "outputs", "upstream"]:
+            assert have[field] == want[field]
+
     with open(f"{tmpdir}/hej.txt.au.json") as aufile1:
-        audit_info = json.load(aufile1)
+        audit_info1 = json.load(aufile1)
         want_dict1 = {
             "command": f"echo hej > {tmpdir}/hej.txt",
             "inputs": [],
             "outputs": [f"{tmpdir}/hej.txt"],
             "upstream": {},
         }
-        assert audit_info == want_dict1
+        compare_some_audit_fields(audit_info1, want_dict1)
 
     with open(f"{tmpdir}/hej.da.txt.au.json") as aufile2:
         audit_info2 = json.load(aufile2)
@@ -57,7 +61,7 @@ def test_create_two_files():
             "outputs": [f"{tmpdir}/hej.da.txt"],
             "upstream": {},
         }
-        assert audit_info2 == want_dict2
+        compare_some_audit_fields(audit_info2, want_dict2)
 
     # Clean up
     os.remove(f"{tmpdir}/hej.txt")

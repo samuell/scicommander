@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import datetime as dt
 import json
 import sys
 import os
@@ -48,20 +49,45 @@ def main(args):
     print(f"Command after replace: {command}")
 
     # Execute command
+    start_time = dt.datetime.now()
     stdout, stderr, retcode = execute_command(command)
+    end_time = dt.datetime.now()
 
     # Write AuditInfo file(s)
-    write_audit_files(command, input_paths, output_paths, args.merge_audit_files)
+    write_audit_files(
+        command,
+        input_paths,
+        output_paths,
+        start_time,
+        end_time,
+        args.merge_audit_files,
+    )
 
 
-def write_audit_files(command, input_paths, output_paths, merge_audit_files):
+def write_audit_files(
+    command, input_paths, output_paths, start_time, end_time, merge_audit_files
+):
     audit_extension = ".au.json"
 
+    dur = end_time - start_time
+    d = int(dur.days)
+    h, rem = divmod(dur.seconds, 3600)
+    m, rem = divmod(rem, 60)
+    s = rem
+    mus = int(dur.microseconds)
+
+    s_float = float(f"{dur.seconds}.{dur.microseconds:06d}")
+
+    iso_datetime_fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
     audit_info = {
         "command": command,
         "inputs": input_paths,
         "outputs": output_paths,
         "upstream": {},
+        "start_time": start_time.strftime(iso_datetime_fmt),
+        "end_time": end_time.strftime(iso_datetime_fmt),
+        "duration": f"{d}-{h:02d}:{m:02d}:{s:02d}.{mus:06d}",
+        "duration_s": s_float,
     }
 
     # Merge input audits into the final one
