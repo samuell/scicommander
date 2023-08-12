@@ -129,27 +129,30 @@ def collect_audit_info(audit_path):
 def write_html_report(tasks, audit_path):
     dot = generate_dot_graph(tasks)
     dot_path = audit_path.replace(".au.json", ".au.dot")
-    png_path = dot_path.replace(".dot", ".png")
+    svg_path = dot_path.replace(".dot", ".svg")
 
     with open(dot_path, "w") as dotfile:
         dotfile.write(dot)
 
-    sub.run(f"dot -Tpng {dot_path} > {png_path}", shell=True)
+    sub.run(f'dot -Tsvg {dot_path} > {svg_path}', shell=True)
 
-    html = "<html>"
-    html += "<body style='font-family:monospace, courier new'>"
-    html += "<h1>SciCommander Audit Report<h1>"
-    html += "<hr>"
-    html += "<table borders='none' cellpadding='8px'>"
-    html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>"
+    with open(svg_path) as svg_file:
+        svg = svg_file.read().strip()
+
+    html = "<html>\n"
+    html += "<body style='font-family:monospace, courier new'>\n"
+    html += "<h1>SciCommander Audit Report<h1>\n"
+    html += "<hr>\n"
+    html += "<table borders='none' cellpadding='8px'>\n"
+    html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>\n"
     for task in tasks:
         html += f"<tr><td>{task['start_time']}</td><td style='background: #efefef;'>{task['command']}</td><td>{task['duration']}</tr>\n"
     html += "</table>"
     html += "<hr>"
-    html += f'<img src="{png_path}" alt="Execution graph"/>'
-    html += "<hr>"
-    html += "</body>"
-    html += "</html>"
+    html += svg + "\n"
+    html += "<hr>\n"
+    html += "</body>\n"
+    html += "</html>\n"
 
     html_path = audit_path.replace(".au.json", ".au.html")
     with open(html_path, "w") as htmlfile:
