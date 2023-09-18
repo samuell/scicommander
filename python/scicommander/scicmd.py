@@ -92,8 +92,8 @@ def generate_graph(tasks):
     nodes = []
     edges = []
     for task in tasks:
-        nodes.append(task["command"])
         command = " ".join(task["executors"][0]["command"])
+        nodes.append(command)
         for out_info in task["outputs"]:
             edges.append((command, out_info["url"]))
             nodes.append(out_info["url"])
@@ -111,8 +111,8 @@ def collect_audit_info(audit_path):
     tasks = []
 
     def add_input_audit_files(ai):
-        for input_dict in ai["inputs"]:
-            input_audit_path = f"{input_dict['url']}.au.json"
+        for in_info in ai["inputs"]:
+            input_audit_path = f"{in_info['url']}.au.json"
             if not os.path.isfile(input_audit_path):
                 return
 
@@ -123,14 +123,15 @@ def collect_audit_info(audit_path):
 
     tasks.append(ai)
     add_input_audit_files(ai)
-    tasks.sort(key=lambda x: x["start_time"])
+    tasks.sort(key=lambda x: x["tags"]["start_time"])
 
     # Remove duplicate tasks
     seen_commands = set()
     unique_tasks = []
     for task in tasks:
-        if task["command"] not in seen_commands:
-            seen_commands.add(task["command"])
+        command = " ".join(task["executors"][0]["command"])
+        if command not in seen_commands:
+            seen_commands.add(command)
             unique_tasks.append(task)
 
     return unique_tasks
@@ -156,7 +157,8 @@ def write_html_report(tasks, audit_path):
     html += "<table borders='none' cellpadding='8px'>\n"
     html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>\n"
     for task in tasks:
-        html += f"<tr><td>{task['start_time']}</td><td style='background: #efefef;'>{task['command']}</td><td>{task['duration']}</tr>\n"
+        command = " ".join(task["executors"][0]["command"])
+        html += f"<tr><td>{task['tags']['start_time']}</td><td style='background: #efefef;'>{command}</td><td>{task['tags']['duration']}</tr>\n"
     html += "</table>"
     html += "<hr>"
     html += svg + "\n"
