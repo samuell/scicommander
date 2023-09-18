@@ -42,15 +42,18 @@ def test_create_two_files():
         assert content == "hej da"
 
     def compare_some_audit_fields(have, want):
-        for field in ["command", "inputs", "outputs", "upstream"]:
+        for field in ["executors", "inputs", "outputs", "upstream"]:
             assert have[field] == want[field]
 
     with open(f"{tmpdir}/hej.txt.au.json") as aufile1:
         audit_info1 = json.load(aufile1)
         want_dict1 = {
-            "command": f"echo hej > {tmpdir}/hej.txt",
             "inputs": [],
-            "outputs": [f"{tmpdir}/hej.txt"],
+            "outputs": [{"url": f"{tmpdir}/hej.txt", "path": None}],
+            "executors": {
+                "image": None,
+                "command": f"echo hej > {tmpdir}/hej.txt".split(" "),
+            },
             "upstream": {},
         }
         compare_some_audit_fields(audit_info1, want_dict1)
@@ -58,9 +61,14 @@ def test_create_two_files():
     with open(f"{tmpdir}/hej.da.txt.au.json") as aufile2:
         audit_info2 = json.load(aufile2)
         want_dict2 = {
-            "command": f"echo $(cat {tmpdir}/hej.txt) da > {tmpdir}/hej.da.txt",
-            "inputs": [f"{tmpdir}/hej.txt"],
-            "outputs": [f"{tmpdir}/hej.da.txt"],
+            "inputs": [{"url": f"{tmpdir}/hej.txt", "path": None}],
+            "outputs": [{"url": f"{tmpdir}/hej.da.txt", "path": None}],
+            "executors": {
+                "image": None,
+                "command": f"echo $(cat {tmpdir}/hej.txt) da > {tmpdir}/hej.da.txt".split(
+                    " "
+                ),
+            },
             "upstream": {},
         }
         compare_some_audit_fields(audit_info2, want_dict2)

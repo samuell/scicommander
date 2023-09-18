@@ -93,12 +93,13 @@ def generate_graph(tasks):
     edges = []
     for task in tasks:
         nodes.append(task["command"])
-        for outpath in task["outputs"]:
-            edges.append((task["command"], outpath))
-            nodes.append(outpath)
-        for inpath in task["inputs"]:
-            edges.append((inpath, task["command"]))
-            nodes.append(inpath)
+        command = " ".join(task["executors"][0]["command"])
+        for out_info in task["outputs"]:
+            edges.append((command, out_info["url"]))
+            nodes.append(out_info["url"])
+        for in_info in task["inputs"]:
+            edges.append((in_info["url"], command))
+            nodes.append(in_info["url"])
     nodes = set(nodes)
     edges = set(edges)
     return nodes, edges
@@ -110,8 +111,8 @@ def collect_audit_info(audit_path):
     tasks = []
 
     def add_input_audit_files(ai):
-        for input_path in ai["inputs"]:
-            input_audit_path = f"{input_path}.au.json"
+        for input_dict in ai["inputs"]:
+            input_audit_path = f"{input_dict['url']}.au.json"
             if not os.path.isfile(input_audit_path):
                 return
 
@@ -187,15 +188,24 @@ def write_audit_files(
     s_float = float(f"{dur.seconds}.{dur.microseconds:06d}")
 
     iso_datetime_fmt = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+    inputs = [{"url": inpath, "path": None} for inpath in input_paths]
+    outputs = [{"url": outpath, "path": None} for outpath in output_paths]
+
     audit_info = {
-        "command": command,
-        "inputs": input_paths,
-        "outputs": output_paths,
+        "inputs": inputs,
+        "outputs": outputs,
+        "executors": {
+            "image": None,
+            "command": command.split(" "),
+        },
+        "tags": {
+            "start_time": start_time.strftime(iso_datetime_fmt),
+            "end_time": end_time.strftime(iso_datetime_fmt),
+            "duration": f"{d}-{h:02d}:{m:02d}:{s:02d}.{mus:06d}",
+            "duration_s": s_float,
+        },
         "upstream": {},
-        "start_time": start_time.strftime(iso_datetime_fmt),
-        "end_time": end_time.strftime(iso_datetime_fmt),
-        "duration": f"{d}-{h:02d}:{m:02d}:{s:02d}.{mus:06d}",
-        "duration_s": s_float,
     }
 
     # Merge input audits into the final one
