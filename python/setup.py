@@ -11,7 +11,7 @@ with open("../README.md") as fobj:
 
 setup(
     name="scicommander",
-    version="0.1.4",
+    version="0.2.0",
     description="A small library for executing shell commands in a reproducible way.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -32,7 +32,7 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: >=3.7",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
     ],
