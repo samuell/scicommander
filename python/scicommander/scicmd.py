@@ -197,10 +197,12 @@ def write_audit_files(
     audit_info = {
         "inputs": inputs,
         "outputs": outputs,
-        "executors": {
-            "image": None,
-            "command": command.split(" "),
-        },
+        "executors": [
+            {
+                "image": None,
+                "command": command.split(" "),
+            }
+        ],
         "tags": {
             "start_time": start_time.strftime(iso_datetime_fmt),
             "end_time": end_time.strftime(iso_datetime_fmt),
