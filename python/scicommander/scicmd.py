@@ -92,7 +92,9 @@ def generate_graph(tasks):
     nodes = []
     edges = []
     for task in tasks:
-        command = " ".join(task["executors"][0]["command"])
+        # fmt: off
+        command = " ".join(task["executors"][0]["command"]).replace('"', '\\"')
+        # fmt: on
         nodes.append(command)
         for out_info in task["outputs"]:
             edges.append((command, out_info["url"]))
