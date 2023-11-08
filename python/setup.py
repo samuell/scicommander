@@ -39,6 +39,7 @@ setup(
     entry_points={
         "console_scripts": [
             "scicmd=scicommander.scicmd:main",
+            "scishell=scicommander.scishell:main",
         ],
     },
 )
