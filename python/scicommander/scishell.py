@@ -2,6 +2,8 @@ from cmd import Cmd
 from subprocess import Popen, PIPE
 import os
 
+from scicommander import scicmd
+
 
 def main():
     scishell = SciShell()
@@ -13,11 +15,11 @@ class SciShell(Cmd):
     def default(self, input_text):
         if input_text in ["q", "exit"]:
             return True
-        p = Popen(input_text, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        output, err = p.communicate()
-        rc = p.returncode
-        outstr = bytes.decode(output).strip()
-        print(outstr)
+
+        try:
+            scicmd.parse_and_execute(input_text)
+        except Exception as e:
+            print(f"ERROR: {e}")
 
     def do_EOF(self, _):
         print("Exiting SciCommander ...")

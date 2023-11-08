@@ -34,7 +34,10 @@ def main():
         return
 
     command = " ".join(args.command)
+    parse_and_execute(command)
 
+
+def parse_and_execute(command):
     # Capture input paths
     input_paths = []
     input_matches = get_input_matches(command)
