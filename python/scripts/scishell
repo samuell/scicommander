@@ -1,0 +1,10 @@
+#!/bin/bash
+function init_scishell() {
+    bash --rcfile <(cat << EOF
+        export PS1="\033[32mscish > \033[39m"
+        shopt -s extdebug
+        trap 'if [[ \$BASH_COMMAND == ls* || \$BASH_COMMAND == cd* || \$BASH_COMMAND == pwd* || \$BASH_COMMAND == compopt* || \$BASH_COMMAND == \[\[* ]]; then \$BASH_COMMAND; else scicmd -c \$BASH_COMMAND; fi; false' DEBUG
+EOF
+)
+}
+init_scishell
