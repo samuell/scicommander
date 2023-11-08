@@ -1,4 +1,6 @@
 from cmd import Cmd
+from subprocess import Popen, PIPE
+import os
 
 
 def main():
@@ -8,7 +10,18 @@ def main():
 
 
 class SciShell(Cmd):
-    pass
+    def default(self, input_text):
+        if input_text in ["q", "exit"]:
+            return True
+        p = Popen(input_text, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        output, err = p.communicate()
+        rc = p.returncode
+        outstr = bytes.decode(output).strip()
+        print(outstr)
+
+    def do_EOF(self, _):
+        print("Exiting SciCommander ...")
+        return True
 
 
 if __name__ == "__main__":
