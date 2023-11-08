@@ -41,4 +41,5 @@ setup(
             "scicmd=scicommander.scicmd:main",
         ],
     },
+    scripts=["scripts/scishell"]
 )
