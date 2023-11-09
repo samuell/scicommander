@@ -1,10 +1,30 @@
 #!/bin/bash
-function init_scishell() {
-    bash --rcfile <(cat << EOF
-        export PS1="\033[32mscish > \033[39m"
-        shopt -s extdebug
-        trap 'if [[ \$BASH_COMMAND == ls* || \$BASH_COMMAND == cd* || \$BASH_COMMAND == pwd* || \$BASH_COMMAND == compopt* || \$BASH_COMMAND == \[\[* ]]; then \$BASH_COMMAND; else scicmd -c \$BASH_COMMAND; fi; false' DEBUG
-EOF
-)
+cat > .scishell.tmp <<EOF
+lastcmdfile=".scishell.last";
+export PS1="\033[32mscish > \033[39m"
+shopt -s extdebug
+function preexec () {
+    cmd="\$1";
+    if [[ \$cmd == cd* || \$cmd == compopt* || \$cmd == \[\[* ]]; then
+        \$cmd;
+    else
+        lastcmd_recentfile="\$(find -mmin -1 -name \$lastcmdfile; true)";
+        # Skip executing the command if the exact same command was executed within a minute
+        if [[ -f \$lastcmd_recentfile ]]; then
+            lastcmd="\$(cat \$lastcmd_recentfile; true)"
+            if [[ "\$cmd" == "\$lastcmd" ]]; then
+                return;
+            fi;
+        fi;
+        echo "\$cmd" > \$lastcmdfile;
+        scicmd -c "\$cmd"
+    fi;
 }
-init_scishell
+function preexec_invoke_exec () {
+    local cmd=\$(HISTTIMEFORMAT=; history 1 | sed -r 's/^[ ]+[0-9]+[ ]+//g');
+    preexec "\$cmd";
+    false; # Make sure the command is not executed once more
+}
+trap 'preexec_invoke_exec' DEBUG
+EOF
+bash --rcfile .scishell.tmp
