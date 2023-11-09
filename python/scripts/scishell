@@ -5,7 +5,7 @@ export PS1="\033[32mscish > \033[39m"
 shopt -s extdebug
 function preexec () {
     cmd="\$1";
-    if [[ \$cmd == cd* || \$cmd == compopt* || \$cmd == \[\[* ]]; then
+    if [[ \$cmd == cd* || \$cmd == ls* || \$cmd == rm* || \$cmd == compopt* || \$cmd == \[\[* ]]; then
         \$cmd;
     else
         lastcmd_recentfile="\$(find -mmin -1 -name \$lastcmdfile; true)";
