@@ -127,6 +127,31 @@ scicmd --to-html dna.compl.rev.fa.au.json
 
 Then you will see [an HTML page like this](https://htmlpreview.github.io/?https://github.com/samuell/scicommander/blob/main/python/examples/dna.compl.rev.fa.au.html)
 
+## Experimental: Bash integration
+
+There is very early and experimental support for running SciCommander commands
+in bash, without needing to run them via the `scicmd -c` command.
+
+To do this, start the SciCommander shell with the following command:
+
+```bash
+scishell
+```
+
+And then, you can run the example commands above as follows:
+
+```bash
+# Create a fasta file with some DNA
+echo AAAGCCCGTGGGGGACCTGTTC > o:dna.fa
+# Compute the complement sequence
+cat i:dna.fa | tr ACGT TGCA > o:dna.compl.fa
+# Reverse the DNA string
+cat i:dna.compl.fa | rev > o:dna.compl.rev.fa
+```
+
+In other words, only the `i:` and `o:` markers are now needed, and no extra
+syntax.
+
 ## Notes
 
 [1] Although Nextflow and Snakemake already take care of some of the benefits,
