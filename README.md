@@ -1,6 +1,8 @@
 SciCommander
 ============
 
+![Run Python Tests](https://github.com/samuell/scicommander/actions/workflows/python-run-tests.yml/badge.svg)
+
 This is a small tool that executes single shell commands in a scientifically
 more reproducible and robust way, by doing the following things:
 
