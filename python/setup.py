@@ -11,7 +11,7 @@ with open("../README.md") as fobj:
 
 setup(
     name="scicommander",
-    version="0.3.0",
+    version="0.3.1",
     description="A small library for executing shell commands in a reproducible way.",
     long_description=long_description,
     long_description_content_type="text/markdown",
