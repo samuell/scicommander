@@ -50,10 +50,12 @@ def test_create_two_files():
         want_dict1 = {
             "inputs": [],
             "outputs": [{"url": f"{tmpdir}/hej.txt", "path": None}],
-            "executors": {
-                "image": None,
-                "command": f"echo hej > {tmpdir}/hej.txt".split(" "),
-            },
+            "executors": [
+                {
+                    "image": None,
+                    "command": ["echo", "hej", ">", f"{tmpdir}/hej.txt"],
+                }
+            ],
             "upstream": {},
         }
         compare_some_audit_fields(audit_info1, want_dict1)
@@ -63,12 +65,19 @@ def test_create_two_files():
         want_dict2 = {
             "inputs": [{"url": f"{tmpdir}/hej.txt", "path": None}],
             "outputs": [{"url": f"{tmpdir}/hej.da.txt", "path": None}],
-            "executors": {
-                "image": None,
-                "command": f"echo $(cat {tmpdir}/hej.txt) da > {tmpdir}/hej.da.txt".split(
-                    " "
-                ),
-            },
+            "executors": [
+                {
+                    "image": None,
+                    "command": [
+                        "echo",
+                        "$(cat",
+                        f"{tmpdir}/hej.txt)",
+                        "da",
+                        ">",
+                        f"{tmpdir}/hej.da.txt",
+                    ],
+                }
+            ],
             "upstream": {},
         }
         compare_some_audit_fields(audit_info2, want_dict2)
