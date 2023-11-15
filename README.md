@@ -11,6 +11,13 @@ more reproducible and robust way, by doing the following things:
 - (Coming soon): Atomic writes - Writes files to a temporary location until
   command is finished
 
+## News
+
+- **Nov 9, 2023:** Version 0.3.3 released, with a new command, `scishell`, that
+  allows you to run commands more like in a normal shell (only adding  `i:`
+  before input files and `o:` before output files), instead of running it
+  through a separate command, and still have the full audit trace generated.
+
 ## Requirements
 
 - A unix like operating system such as Linux or Mac OS (On Windows you can use
