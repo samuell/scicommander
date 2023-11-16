@@ -17,6 +17,7 @@ more reproducible and robust way, by doing the following things:
   allows you to run commands more like in a normal shell (only adding  `i:`
   before input files and `o:` before output files), instead of running it
   through a separate command, and still have the full audit trace generated.
+  - Read more in [this blog post](https://bionics.it/posts/scicommander-0.3)!
 
 ## Requirements
 
