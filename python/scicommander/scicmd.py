@@ -17,6 +17,7 @@ argp.add_argument(
 )
 argp.add_argument("--command", "-c", nargs="...")
 argp.add_argument("--to-html", "-th", metavar="AUDIT_FILE")
+argp.add_argument("--max-history", "-mh", type=int, default=-1)
 args = argp.parse_args()
 
 
@@ -115,7 +116,9 @@ def collect_audit_info(audit_path):
         ai = json.load(aifile)
     tasks = []
 
-    def add_input_audit_files(ai):
+    def add_input_audit_files(ai, hist_level):
+        if args.max_history >= 0 and hist_level + 1 >= args.max_history:
+            return
         for in_info in ai["inputs"]:
             input_audit_path = f"{in_info['url']}.au.json"
             if not os.path.isfile(input_audit_path):
@@ -124,10 +127,10 @@ def collect_audit_info(audit_path):
             with open(input_audit_path) as iaupath:
                 upstream = json.load(iaupath)
             tasks.append(upstream)
-            add_input_audit_files(upstream)
+            add_input_audit_files(upstream, hist_level + 1)
 
     tasks.append(ai)
-    add_input_audit_files(ai)
+    add_input_audit_files(ai, 0)
     tasks.sort(key=lambda x: x["tags"]["start_time"])
 
     # Remove duplicate tasks
