@@ -5,6 +5,27 @@ import subprocess
 
 base_cmd = "python scicommander/scicmd.py"
 
+def test_autodetect_outputs():
+    tmpdir = ".tmp.scicmd-test-autodetect-outputs"
+    os.makedirs(tmpdir, exist_ok=True)
+    out_path = f"{tmpdir}/foo.txt"
+
+    cmd1 = f"{base_cmd} -c 'echo foo > o:{out_path}'"
+    run_command(cmd1)
+
+    # The following shouldn't be executed, since the path already exists
+    cmd2 = f"{base_cmd} -c 'echo bar > o:{out_path}'"
+    run_command(cmd2)
+
+    with open(out_path) as out_file:
+        out_file_content = out_file.read()
+
+    assert out_file_content == "foo\n"
+
+
+def test_autodetect_inputs():
+    pass
+
 
 def test_create_file():
     tmpdir = ".tmp.scicmd-test-create-file"
