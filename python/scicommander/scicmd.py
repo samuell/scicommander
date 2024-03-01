@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import argparse
 import datetime as dt
+import glob
+import hashlib
 import json
+import shutil
 import sys
 import os
+import pathlib
 import re
 import subprocess as sub
 
@@ -38,33 +42,88 @@ def main():
 
 
 def parse_and_execute(command):
-    # Capture input paths
-    input_paths = []
-    input_matches = get_input_matches(command)
-    for ph, path in input_matches:
-        input_paths.append(path)
+    # ## Recipe for a general reproduction process
+    # - Check all substrings (separated by spaces) of current command if they
+    #   correspond to an existing file.
+    # - If such a file exists and a corresponding audit file exists *with the
+    #   same command* as the current one, identify it as an existing output file
+    #   and skip running the current command. (i.e. skip the rest of the points
+    #   below).
+    # - If the file instead lacks an audit file or has an audit file with a
+    #   different command, identify it as an input file.
+    # - Create a temporary directory where the command can run.
+    # - Link all input files identified in 3) into the directory with symlinks
+    # - Run the command in the directory
+    # - Run a glob command in the directory to find all newly created files,
+    #   and identify these as new output files
+    # - Create audit files for all of these (with the executed command and
+    #   other info)
+    # - Move all output files to their final paths
+    # - Clear the temporary directory
 
-    # Capture output paths
-    output_paths = []
-    output_matches = get_output_matches(command)
-    for ph, path in output_matches:
-        output_paths.append(path)
+    input_paths = set()
+    output_paths = set()
 
-    # Check if paths already exist
-    for path in output_paths:
-        if os.path.exists(path):
-            print(f"Skipping: {command} (Output exists: {path})")
-            return
+    # Check all substrings (separated by spaces) of current command if they
+    # correspond to an existing file.
+    tmp_cmd = command
 
-    # Replace placeholders with only the path
-    matches = input_matches + output_matches
-    for ph, path in matches:
-        command = command.replace(ph, path)
+    for ch in "$()[]":
+        tmp_cmd = tmp_cmd.replace(ch, "")
 
-    # Execute command
+    cmd_parts = tmp_cmd.split(" ")
+    for cmd_part in cmd_parts:
+        cmd_part_au = f"{cmd_part}.au.json"
+
+        if os.path.exists(cmd_part):
+            if os.path.exists(cmd_part_au):
+                with open(cmd_part_au) as audit_file:
+                    audit_info = json.load(audit_file)
+                    audit_command = " ".join(audit_info["executors"][0]["command"])
+                    if audit_command == command:
+                        # This is a previous command
+                        print(
+                            f"Skipping: {command} (Output exists: {cmd_part} together with audit file: {cmd_part_au})"
+                        )
+                        return
+
+            # This will be skipped if identified as a previously created output
+            # path of the current command
+            print(f"Identifying as input path: {cmd_part}")
+            input_paths.add(cmd_part)
+
+    # - Create a temporary directory where the command can run.
+    cmdhash = hashlib.md5()
+    cmdhash.update(bytes(command, "utf-8"))
+    cmdhash_str = cmdhash.hexdigest()
+    tmpdir = f".tmp.scicmdr.{cmdhash_str}"
+    os.makedirs(tmpdir)
+
+    # Link all input files identified in 3) into the directory with symlinks
+    for input_path in input_paths:
+        src = pathlib.Path("..") / pathlib.Path(input_path)
+        dst = pathlib.Path(tmpdir) / input_path
+        os.symlink(
+            src,
+            dst,
+        )
+        execute_command(f"chmod a-w {dst}")
+
+    os.chdir(tmpdir)
+    paths_before = set(glob.glob("*"))
+    # Run the command in the directory
+
     start_time = dt.datetime.now()
     stdout, stderr, retcode = execute_command(command)
     end_time = dt.datetime.now()
+
+    # Run a glob command in the directory to find all newly created files,
+    # and identify these as new output files
+    paths_after = set(glob.glob("*"))
+
+    new_paths = paths_after - paths_before
+    print("New paths: " + ", ".join(new_paths))
+    output_paths = output_paths.union(new_paths)
 
     # Write AuditInfo file(s)
     write_audit_files(
@@ -75,6 +134,23 @@ def parse_and_execute(command):
         end_time,
         args.merge_audit_files,
     )
+
+    # Move all output files to their final paths
+    os.chdir("../")
+
+    for output_path in output_paths:
+        print(f"Moving {output_path} ...")
+        shutil.move(pathlib.Path(tmpdir) / output_path, output_path)
+        shutil.move(
+            pathlib.Path(tmpdir) / f"{output_path}.au.json", f"{output_path}.au.json"
+        )
+
+    for input_path in input_paths:
+        in_path = pathlib.Path(tmpdir) / input_path
+        os.remove(in_path)
+
+    # Clear the temporary directory
+    os.removedirs(tmpdir)
 
 
 def generate_dot_graph(tasks):
