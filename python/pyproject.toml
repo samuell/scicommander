@@ -5,12 +5,13 @@ description = ""
 authors = ["Samuel Lampa <samuel.lampa@scilifelab.se>"]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.10"
+pytest = "^8.0.2"
 
 [tool.poetry.dev-dependencies]
 ipython = "^8.14.0"
 ipdb = "^0.13.13"
-pytest = "^7.4.0"
+pytest = "^8"
 twine = "^4.0.2"
 build = "^1.0.3"
 virtualenv = "^20.24.6"
