@@ -53,6 +53,18 @@ func executeCommand(cmdStr string) {
 	checkMsg(err, errMsg)
 }
 
+func detectFiles(strs []string) []string {
+	files := []string{}
+	for _, str := range strs {
+		if _, err := os.Stat(str); os.IsNotExist(err) {
+			fmt.Println("File does not exist: ", str)
+		} else {
+			files = append(files, str)
+		}
+	}
+	return files
+}
+
 func checkMsg(err error, message string) {
 	if err != nil {
 		fmt.Println(message)
