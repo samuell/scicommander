@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -9,27 +10,41 @@ import (
 
 func TestDetectFiles(t *testing.T) {
 	tmpDir := t.TempDir()
+	fmt.Printf("Moving into %v ...\n", tmpDir)
 	os.Chdir(tmpDir)
 
 	// Arrange
-	wantFiles := []string{"foo.txt", filepath.Join("bar/baz.xyz")}
-	for _, fileToCreate := range wantFiles {
-		baseDir := filepath.Dir(fileToCreate)
-		if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-			err := os.MkdirAll(baseDir, 0744)
-			checkMsg(err, "Could not create dir: "+baseDir)
-		}
-		_, err := os.Create(filepath.Join(tmpDir, fileToCreate))
-		checkMsg(err, "Could not create file: "+fileToCreate)
+	wantInFiles := []string{"foo.txt", filepath.Join("bar/baz.xyz")}
+	for _, f := range wantInFiles {
+		createDirAndFile(f)
+	}
+	wantOutFiles := []string{"bar/xyz.abc"}
+	for _, f := range wantOutFiles {
+		createDirAndFile(f)
+		// Create audit path too
+		createDirAndFile(f + ".au")
 	}
 
-	stringsToCheck := []string{"foo.txt", "foz.tsv", filepath.Join("bar/baz.xyz"), "baz.csv"}
+	stringsToCheck := []string{"foo.txt", "foz.tsv", filepath.Join("bar", "baz.xyz"), "baz.csv", filepath.Join("bar", "xyz.abc")}
 
 	// Act
-	haveFiles := detectFiles(stringsToCheck)
+	haveInFiles, haveOutFiles := detectFiles(stringsToCheck)
 
 	// Assert
-	if !reflect.DeepEqual(haveFiles, wantFiles) {
-		t.Fatalf("Wanted %v but got %v\n", wantFiles, haveFiles)
+	if !reflect.DeepEqual(haveInFiles, wantInFiles) {
+		t.Fatalf("Wanted infiles %v but got %v\n", wantInFiles, haveInFiles)
 	}
+	if !reflect.DeepEqual(haveOutFiles, wantOutFiles) {
+		t.Fatalf("Wanted outfiles %v but got %v\n", wantOutFiles, haveOutFiles)
+	}
+}
+
+func createDirAndFile(filePath string) {
+	baseDir := filepath.Dir(filePath)
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		err := os.MkdirAll(baseDir, 0744)
+		checkMsg(err, "Could not create dir: "+baseDir)
+	}
+	_, err := os.Create(filePath)
+	checkMsg(err, "Could not create file: "+filePath)
 }

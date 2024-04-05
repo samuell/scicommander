@@ -42,6 +42,10 @@ func executeCommand(cmdStr string) {
 	cmdParts := strings.Split(cmdStr, " ")
 	cmdBase := cmdParts[0]
 	cmdArgs := cmdParts[1:]
+
+	inFiles, outFiles := detectFiles(cmdArgs)
+	fmt.Printf("Infiles: %v, Outfiles: %v\n", inFiles, outFiles)
+
 	cmd := exec.Command(cmdBase, cmdArgs...)
 
 	var stdout, stderr bytes.Buffer
@@ -53,16 +57,21 @@ func executeCommand(cmdStr string) {
 	checkMsg(err, errMsg)
 }
 
-func detectFiles(strs []string) []string {
-	files := []string{}
+func detectFiles(strs []string) ([]string, []string) {
+	inFiles := []string{}
+	outFiles := []string{}
 	for _, str := range strs {
 		if _, err := os.Stat(str); os.IsNotExist(err) {
-			fmt.Println("File does not exist: ", str)
 		} else {
-			files = append(files, str)
+			auditPath := str + ".au"
+			if _, err := os.Stat(auditPath); os.IsNotExist(err) {
+				inFiles = append(inFiles, str)
+			} else {
+				outFiles = append(outFiles, str)
+			}
 		}
 	}
-	return files
+	return inFiles, outFiles
 }
 
 func checkMsg(err error, message string) {
