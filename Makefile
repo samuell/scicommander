@@ -1,4 +1,4 @@
-BINARY_NAME := scicmd
+BINARY_NAME := sci
 
 .PHONY := build
 

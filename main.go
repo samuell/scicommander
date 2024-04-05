@@ -16,8 +16,8 @@ func main() {
 
 	usage := `
 Usage:
-scicmdr run <command>
-scicmdr htmlize <html-file>
+sci run <command>
+sci htmlize <html-file>
 `
 
 	if len(os.Args) < 2 {
