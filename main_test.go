@@ -14,18 +14,21 @@ func TestDetectFiles(t *testing.T) {
 	os.Chdir(tmpDir)
 
 	// Arrange
-	wantInFiles := []string{"foo.txt", filepath.Join("bar/baz.xyz")}
+	wantInFiles := []string{"foo.txt", filepath.Join("bar", "baz.xyz"), filepath.Join("bar", "xyz.abc")}
 	for _, f := range wantInFiles {
 		createDirAndFile(f)
 	}
-	wantOutFiles := []string{"bar/xyz.abc"}
-	for _, f := range wantOutFiles {
-		createDirAndFile(f)
-		// Create audit path too
-		createDirAndFile(f + ".au")
-	}
 
-	stringsToCheck := []string{"foo.txt", "foz.tsv", filepath.Join("bar", "baz.xyz"), "baz.csv", filepath.Join("bar", "xyz.abc")}
+	wantOutFiles := []string{"out.png"}
+
+	stringsToCheck := []string{
+		"foo.txt",
+		"out.png",
+		">",
+		"|",
+		filepath.Join("bar", "baz.xyz"),
+		filepath.Join("bar", "xyz.abc"),
+	}
 
 	// Act
 	haveInFiles, haveOutFiles := detectFiles(stringsToCheck)

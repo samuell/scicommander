@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 )
 
@@ -60,14 +61,24 @@ func executeCommand(cmdStr string) {
 func detectFiles(strs []string) ([]string, []string) {
 	inFiles := []string{}
 	outFiles := []string{}
-	for _, str := range strs {
+
+	filtered := []string{}
+	nonPaths := []string{">", "|", ">>", ">>>", "<", "<<", "<<<"}
+	for _, s := range strs {
+		if !slices.Contains(nonPaths, s) {
+			filtered = append(filtered, s)
+		}
+	}
+
+	for _, str := range filtered {
 		if _, err := os.Stat(str); os.IsNotExist(err) {
+			outFiles = append(outFiles, str)
 		} else {
 			auditPath := str + ".au"
 			if _, err := os.Stat(auditPath); os.IsNotExist(err) {
 				inFiles = append(inFiles, str)
 			} else {
-				outFiles = append(outFiles, str)
+				inFiles = append(inFiles, str)
 			}
 		}
 	}
