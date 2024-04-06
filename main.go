@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"slices"
 	"strings"
 )
@@ -41,21 +42,45 @@ sci htmlize <html-file>
 
 func executeCommand(cmdStr string) {
 	cmdParts := strings.Split(cmdStr, " ")
-	cmdBase := cmdParts[0]
+	//cmdBase := cmdParts[0]
 	cmdArgs := cmdParts[1:]
 
 	inFiles, outFiles := detectFiles(cmdArgs)
-	fmt.Printf("Infiles: %v, Outfiles: %v\n", inFiles, outFiles)
+	out("Infiles: %v, Outfiles: %v", inFiles, outFiles)
 
-	cmd := exec.Command(cmdBase, cmdArgs...)
+	// Write shell script for each output file
+	//cmdScript := "!/bin/bash\n" + cmdStr + "\n"
+	//for _, outFile := range outFiles {
+	//	os.WriteFile(outFile+".sh", []byte(cmdScript), 0744)
+	//}
+
+	filesBefore, err := filepath.Glob("./*")
+	checkMsg(err, "Could not glob folder before executing command!")
+
+	// Execute the command
+	bashArgs := strings.Join(cmdParts, " ")
+	out("Executing command: %v", bashArgs)
+	cmd := exec.Command("bash", "-c", bashArgs)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	err := cmd.Run()
-	errMsg := fmts("Could not run command: %s", cmdStr)
+	err = cmd.Run()
+	errMsg := fmts("Could not run command: %s\nSTDERR: %s\nSTDOUT: %s", cmdStr, cmd.Stderr, cmd.Stdout)
 	checkMsg(err, errMsg)
+
+	filesAfter, err := filepath.Glob("./*")
+	checkMsg(err, "Could not glob folder after executing command!")
+
+	newFiles := []string{}
+	numFiles := len(filesBefore)
+	for _, file := range filesAfter {
+		if !slices.Contains(filesBefore, file) {
+			newFiles = append(newFiles, file)
+			fmt.Printf("New file found after checking against %d files: %v\n", numFiles, file)
+		}
+	}
 }
 
 func detectFiles(strs []string) ([]string, []string) {
@@ -95,4 +120,8 @@ func checkMsg(err error, message string) {
 
 func fmts(s string, v ...interface{}) string {
 	return fmt.Sprintf(s, v...)
+}
+
+func out(s string, v ...interface{}) {
+	fmt.Printf(s+"\n", v...)
 }
