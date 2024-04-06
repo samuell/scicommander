@@ -2,13 +2,16 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -58,15 +61,21 @@ func executeCommand(cmdStr string) {
 	checkMsg(err, "Could not glob folder before executing command!")
 
 	// Execute the command
-	bashArgs := strings.Join(cmdParts, " ")
-	out("Executing command: %v", bashArgs)
-	cmd := exec.Command("bash", "-c", bashArgs)
+	timeBefore := time.Now()
+
+	out("Executing command: %v", cmdStr)
+	cmd := exec.Command("bash", "-c", cmdStr)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	err = cmd.Run()
+
+	timeAfter := time.Now()
+
+	commandDuration := timeAfter.Sub(timeBefore)
+
 	errMsg := fmts("Could not run command: %s\nSTDERR: %s\nSTDOUT: %s", cmdStr, cmd.Stderr, cmd.Stdout)
 	checkMsg(err, errMsg)
 
@@ -80,6 +89,21 @@ func executeCommand(cmdStr string) {
 			newFiles = append(newFiles, file)
 			fmt.Printf("New file found after checking against %d files: %v\n", numFiles, file)
 		}
+	}
+
+	for _, newFile := range newFiles {
+		newAuditFile := newFile + ".au"
+		auditInfo := NewAuditInfo(cmdStr, inFiles, newFiles)
+		auditInfo.Tags.StartTime = timeBefore
+		auditInfo.Tags.EndTime = timeAfter
+		auditInfo.Tags.Duration = commandDuration
+
+		auditJson, jsonErr := json.MarshalIndent(auditInfo, "", "    ")
+		checkMsg(jsonErr, "Could not marshall JSON")
+
+		out("Writing new audit file: %v", newAuditFile)
+		writeErr := ioutil.WriteFile(newAuditFile, auditJson, 0644)
+		checkMsg(writeErr, fmts("Could not write audit file: %v", newAuditFile))
 	}
 }
 
