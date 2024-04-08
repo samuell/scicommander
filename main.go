@@ -48,8 +48,8 @@ func executeCommand(cmdStr string) {
 	//cmdBase := cmdParts[0]
 	cmdArgs := cmdParts[1:]
 
-	inFiles, outFiles := detectFiles(cmdArgs)
-	out("Infiles: %v, Outfiles: %v", inFiles, outFiles)
+	inFiles, _ := detectFiles(cmdArgs)
+	//out("Infiles: %v, Outfiles: %v", inFiles, outFiles)
 
 	// Write shell script for each output file
 	//cmdScript := "!/bin/bash\n" + cmdStr + "\n"
@@ -63,7 +63,7 @@ func executeCommand(cmdStr string) {
 	// Execute the command
 	timeBefore := time.Now()
 
-	out("Executing command: %v", cmdStr)
+	//out("Executing command: %v", cmdStr)
 	cmd := exec.Command("bash", "-c", cmdStr)
 
 	var stdout, stderr bytes.Buffer
@@ -83,11 +83,11 @@ func executeCommand(cmdStr string) {
 	checkMsg(err, "Could not glob folder after executing command!")
 
 	newFiles := []string{}
-	numFiles := len(filesBefore)
+	//numFiles := len(filesBefore)
 	for _, file := range filesAfter {
 		if !slices.Contains(filesBefore, file) {
 			newFiles = append(newFiles, file)
-			fmt.Printf("New file found after checking against %d files: %v\n", numFiles, file)
+			//out("New file found after checking against %d files: %v", numFiles, file)
 		}
 	}
 
@@ -101,7 +101,7 @@ func executeCommand(cmdStr string) {
 		auditJson, jsonErr := json.MarshalIndent(auditInfo, "", "    ")
 		checkMsg(jsonErr, "Could not marshall JSON")
 
-		out("Writing new audit file: %v", newAuditFile)
+		//out("Writing new audit file: %v", newAuditFile)
 		writeErr := ioutil.WriteFile(newAuditFile, auditJson, 0644)
 		checkMsg(writeErr, fmts("Could not write audit file: %v", newAuditFile))
 	}
