@@ -4,3 +4,6 @@ BINARY_NAME := sci
 
 build:
 	go build -o $(BINARY_NAME)
+
+build-tiny:
+	tinygo build --no-debug -o $(BINARY_NAME).tiny
