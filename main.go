@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"text/template"
 	"time"
 )
 
@@ -37,7 +38,8 @@ sci htmlize <html-file>
 		cmdStr := strings.Join(os.Args[2:], " ")
 		executeCommand(cmdStr)
 	case "htmlize":
-		fmt.Println("ERROR: htmlize command not yet implemented!")
+		auditFilePath := strings.Join(os.Args[2:], " ")
+		htmlize(auditFilePath)
 	default:
 		fmt.Println("ERROR: Expected run or htmlize")
 	}
@@ -132,6 +134,31 @@ func detectFiles(strs []string) ([]string, []string) {
 		}
 	}
 	return inFiles, outFiles
+}
+
+func htmlize(auditFilePath string) {
+	auditJson, readErr := ioutil.ReadFile(auditFilePath)
+	checkMsg(readErr, fmts("Error reading file %s", auditFilePath))
+	html := auditToHTML(string(auditJson))
+
+	htmlPath := auditFilePath + ".html"
+	writeErr := ioutil.WriteFile(htmlPath, []byte(html), 0644)
+	checkMsg(writeErr, fmts("Error writing file %s", htmlPath))
+}
+
+const auditTemplate = `<h1>{{ . }}</h1>`
+
+func auditToHTML(auditJson string) (html string) {
+	var auditInfo AuditInfo
+	err := json.Unmarshal([]byte(auditJson), &auditInfo)
+	checkMsg(err, "Failed to unmarshal JSON")
+
+	var tplBuf bytes.Buffer
+	auditTpl, parseErr := template.New("audit-info").Parse(auditTemplate)
+	checkMsg(parseErr, "Failed to parse template")
+	auditTpl.Execute(&tplBuf, auditJson)
+
+	return tplBuf.String()
 }
 
 func checkMsg(err error, message string) {
