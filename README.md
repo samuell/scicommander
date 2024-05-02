@@ -11,6 +11,13 @@ more reproducible and robust way, by doing the following things:
 - (Coming soon): Atomic writes - Writes files to a temporary location until
   command is finished
 
+## Current status
+
+- *May 2, 2024*: I'm currently rewriting this tool in Go, to allow easier
+  distribution on multiple platforms, and avoiding to lock the tool into one
+  specific python environment. The core functionality is already ported, and
+  also heavily improved. Only the HTML reporting remains to port.
+
 ## News
 
 - **Nov 9, 2023:** Version 0.3.3 released, with a new command, `scishell`, that
