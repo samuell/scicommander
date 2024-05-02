@@ -146,7 +146,31 @@ func htmlize(auditFilePath string) {
 	checkMsg(writeErr, fmts("Error writing file %s", htmlPath))
 }
 
-const auditTemplate = `<h1>{{ . }}</h1>`
+func getHtmlTemplate() string {
+	html := `<html>
+<body style='font-family:monospace, courier new'>
+<h1>SciCommander Audit Report<h1>
+<hr>
+<table borders='none' cellpadding='8px'>
+<tr>
+	<th>Start time</th>
+	<th>Command</th>
+	<th>Duration</th>
+</tr>
+<tr>
+	<td>{{ .Tags.StartTime }}</td>
+	<td style="background: #efefef;">{{ StringsJoin (index .Executors 0).Command " " }}</td>
+	<td>{{ .Tags.Duration }}</td>
+</tr>
+</table>
+<hr>
+<!-- SVG here -->
+<hr>
+</body>
+</html>
+`
+	return html
+}
 
 func auditToHTML(auditJson string) (html string) {
 	var auditInfo AuditInfo
@@ -154,9 +178,10 @@ func auditToHTML(auditJson string) (html string) {
 	checkMsg(err, "Failed to unmarshal JSON")
 
 	var tplBuf bytes.Buffer
-	auditTpl, parseErr := template.New("audit-info").Parse(auditTemplate)
+	auditTpl, parseErr := template.New("audit-info").Funcs(template.FuncMap{"StringsJoin": strings.Join}).Parse(getHtmlTemplate())
 	checkMsg(parseErr, "Failed to parse template")
-	auditTpl.Execute(&tplBuf, auditJson)
+	executeErr := auditTpl.Execute(&tplBuf, &auditInfo)
+	checkMsg(executeErr, "Failed to execute template")
 
 	return tplBuf.String()
 }
