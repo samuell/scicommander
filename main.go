@@ -37,7 +37,7 @@ sci htmlize <html-file>
 		cmdStr := strings.Join(os.Args[2:], " ")
 		executeCommand(cmdStr)
 	case "htmlize":
-		fmt.Println("You ran htmlize")
+		fmt.Println("ERROR: htmlize command not yet implemented!")
 	default:
 		fmt.Println("ERROR: Expected run or htmlize")
 	}
