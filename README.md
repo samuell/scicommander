@@ -20,13 +20,6 @@ down the road, such as:
   until command is finished, so that they are never placed at their final
   destination before completely finished.
 
-## Current status
-
-- **May 2, 2024**: I'm currently rewriting this tool in Go, to allow easier
-  distribution on multiple platforms, and avoiding to lock the tool into one
-  specific python environment. The core functionality is already ported, and
-  also heavily improved. Only the HTML reporting remains to port.
-
 ## News
 
 - **Aug 16, 2024:** Version 0.4 released, which is a complete rewrite of the
