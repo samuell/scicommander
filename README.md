@@ -41,12 +41,30 @@ down the road, such as:
 
 ## Installation
 
+### Downloading a pre-built binary
+
+This is the recommended option for most users.
+
+1. Go to the [Releases page]
+2. Identify the latest release
+3. Look under the "Assets" section for a pre-built binary for your computer's
+   hardware architecture and operating system. E.g. something with
+   `linux-amd64` in the name for 64bit Linux operating systems.
+4. Download the archive
+5. Unpack it
+6. Put the binary in a folder that is available in your `$PATH` variable, such
+   as `/usr/bin`, or even better `~/bin`, if you make sure that the latter is
+   included in `$PATH` (If not, you can add `export PATH=~/bin:$PATH` e.g. to
+   the end of your `~/.bashrc` file and then restart your shell).
+7. Done. Now you should be able to execute the `sci` command in any newly
+   opened bash shell.
+
 ### Using Go
 
 This method assumes that you have [installed the Go toolchain](https://go.dev/doc/install).
 
 ```bash
-go install github.com/samuell/scicommander@latest
+go install github.com/samuell/scicommander/cmd/sci@latest
 ```
 
 This will install the `sci` command into your `PATH` variable, so that it
