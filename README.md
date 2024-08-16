@@ -1,7 +1,7 @@
 SciCommander
 ============
 
-[![Build and test Go code](https://github.com/samuell/scicommander/actions/workflows/go-build-and-test.yml/badge.svg)](https://github.com/samuell/scicommander/actions/workflows/go-build-and-test.yml)
+[![Build and test Go code](https://github.com/samuell/scicommander/actions/workflows/go-ci.yml/badge.svg)](https://github.com/samuell/scicommander/actions/workflows/go-ci.yml)
 
 This is a small tool that executes single shell commands in a scientifically
 more reproducible and robust way, by doing the following things:
