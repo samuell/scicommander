@@ -157,11 +157,12 @@ func runShell() {
 	tempScriptPath := ".scishell.bash"
 
 	shellCode := `#!/bin/bash -l
+prompt_str="(SciCmdr) [$USER $(basename $PWD)]$ "
 echo "Starting SciCommander Shell"
 echo "(Exit by pressing Ctrl+C)"
 echo "------------------------------------------------"
 while true; do
-    read -ep "sci> " cmd
+    read -ep "$prompt_str" cmd
     if [[ $cmd == $'\04' ]]; then
         exit
     elif [[ $cmd =~ (ls|ll|pwd|cd|vim|emacs|nano|less|more).* ]]; then
@@ -170,7 +171,7 @@ while true; do
         echo "Command was emtpy. Did you want to exit?"
         echo "Exit by pressing: Ctrl+C"
     else
-        echo "Executing command via SciCommander: $cmd"
+		echo "$(date +%F-%T) | SciCommander executing: $cmd"
         sci run "$cmd"
     fi
 done;
