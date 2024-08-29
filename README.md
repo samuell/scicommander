@@ -45,7 +45,7 @@ down the road, such as:
 
 This is the recommended option for most users.
 
-1. Go to the [Releases page]
+1. Go to the [Releases page](https://github.com/samuell/scicommander/releases)
 2. Identify the latest release
 3. Look under the "Assets" section for a pre-built binary for your computer's
    hardware architecture and operating system. E.g. something with
