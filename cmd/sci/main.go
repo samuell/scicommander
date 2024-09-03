@@ -21,7 +21,7 @@ func init() {
 		flag.PrintDefaults()
 		fmt.Println(`Usage:
 sci run <command>
-sci to-html <html-file>
+sci to-html <audit-file>
 sci shell`)
 	}
 }
