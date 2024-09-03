@@ -111,11 +111,11 @@ its reverse complement, as a shell script, `my_pipeline.sh`:
 #!/bin/bash
 
 # Create a fasta file with some DNA
-echo AAAGCCCGTGGGGGACCTGTTC > o:dna.fa
+echo AAAGCCCGTGGGGGACCTGTTC > dna.fa
 # Compute the complement sequence
-cat i:dna.fa | tr ACGT TGCA > o:dna.compl.fa
+cat dna.fa | tr ACGT TGCA > dna.compl.fa
 # Reverse the DNA string
-cat i:dna.compl.fa | rev > o:dna.compl.rev.fa
+cat dna.compl.fa | rev > dna.compl.rev.fa
 ```
 Now, to make the commands run through SciCommander, change the syntax in the
 script like this:
@@ -124,9 +124,9 @@ script like this:
 #!/bin/bash
 
 # Create a fasta file with some DNA
-sci run echo AAAGCCCGTGGGGGACCTGTTC '>' o:dna.fa
+sci run echo AAAGCCCGTGGGGGACCTGTTC '>' dna.fa
 # Compute the complement sequence
-sci run cat i:dna.fa '|' tr ACGT TGCA '>' dna.compl.fa
+sci run cat dna.fa '|' tr ACGT TGCA '>' dna.compl.fa
 # Reverse the DNA string
 sci run cat dna.compl.fa '|' rev '>' dna.compl.rev.fa
 ```
@@ -142,9 +142,9 @@ An alternative is to encapsulate the full commands in `''`:
 #!/bin/bash
 
 # Create a fasta file with some DNA
-sci run 'echo AAAGCCCGTGGGGGACCTGTTC > o:dna.fa'
+sci run 'echo AAAGCCCGTGGGGGACCTGTTC > dna.fa'
 # Compute the complement sequence
-sci run 'cat i:dna.fa | tr ACGT TGCA > dna.compl.fa'
+sci run 'cat dna.fa | tr ACGT TGCA > dna.compl.fa'
 # Reverse the DNA string
 sci run 'cat dna.compl.fa | rev > dna.compl.rev.fa'
 ```
@@ -190,11 +190,11 @@ And then, you can run the example commands above as follows:
 
 ```bash
 # Create a fasta file with some DNA
-echo AAAGCCCGTGGGGGACCTGTTC > o:dna.fa
+echo AAAGCCCGTGGGGGACCTGTTC > dna.fa
 # Compute the complement sequence
-cat dna.fa | tr ACGT TGCA > o:dna.compl.fa
+cat dna.fa | tr ACGT TGCA > dna.compl.fa
 # Reverse the DNA string
-cat dna.compl.fa | rev > o:dna.compl.rev.fa
+cat dna.compl.fa | rev > dna.compl.rev.fa
 ```
 
 In other words, no extra syntax is needed.
