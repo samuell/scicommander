@@ -22,6 +22,8 @@ down the road, such as:
 
 ## News
 
+- **Sep 3, 2024:** A blog post and poster about the new Go version of SciCommander
+  is [now published here](https://livesys.se/posts/rewrite-of-scicommander-in-go/).
 - **Aug 16, 2024:** Version 0.4 released, which is a complete rewrite of the
   tool in Go, with some cool new features such as the ability to detect output
   files automatically.
