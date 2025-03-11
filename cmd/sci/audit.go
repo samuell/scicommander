@@ -9,7 +9,7 @@ func NewAuditInfo(cmd string, inputs []string, outputs []string) *AuditInfo {
 	return &AuditInfo{
 		Inputs:  inputs,
 		Outputs: outputs,
-		Executors: []*Executor{&Executor{
+		Executors: []*Executor{{
 			Image:   "None",
 			Command: strings.Split(cmd, " "),
 		}},

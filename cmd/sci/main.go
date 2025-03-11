@@ -263,7 +263,7 @@ func generateGraph(auditInfos []AuditInfo) (nodes []string, edges []StringTuple)
 			}
 		}
 	}
-	for node, _ := range nodesSet {
+	for node := range nodesSet {
 		nodes = append(nodes, node)
 	}
 	for _, edge := range edgesSet {
