@@ -167,7 +167,7 @@ while true; do
     elif [[ $cmd =~ (ls|ll|pwd|cd|vim|emacs|nano|less|more).* ]]; then
         $cmd
     elif [[ $cmd == "" ]]; then
-        echo "Command was emtpy. Did you want to exit?"
+        echo "Command was empty. Did you want to exit?"
         echo "Exit by pressing: Ctrl+C"
     else
         echo "Executing command via SciCommander: $cmd"
