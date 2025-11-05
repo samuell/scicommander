@@ -157,23 +157,26 @@ func runShell() {
 	tempScriptPath := ".scishell.bash"
 
 	shellCode := `#!/bin/bash -l
-echo "Starting SciCommander Shell"
+echo "SciCommander Shell"
 echo "(Exit by pressing Ctrl+C)"
 echo "------------------------------------------------"
+history -r .scishell.hist
 while true; do
-    read -ep "sci> " cmd
-    if [[ $cmd == $'\04' ]]; then
+	read -ep "sci> " CMD
+	history -s "$CMD"
+    if [[ $CMD == $'\04' ]]; then
         exit
-    elif [[ $cmd =~ (ls|ll|pwd|cd|vim|emacs|nano|less|more).* ]]; then
-        $cmd
-    elif [[ $cmd == "" ]]; then
+    elif [[ $CMD =~ (ls|ll|pwd|cd|vim|emacs|nano|less|more|history).* ]]; then
+        $CMD
+    elif [[ $CMD == "" ]]; then
         echo "Command was empty. Did you want to exit?"
         echo "Exit by pressing: Ctrl+C"
     else
-        echo "Executing command via SciCommander: $cmd"
-        sci run "$cmd"
+        echo "Executing command via SciCommander: $CMD"
+        sci run "$CMD"
     fi
 done;
+history -w .scishell.hist
 echo "Exited SciCommander Shell"
 `
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)
