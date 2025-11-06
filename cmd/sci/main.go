@@ -16,6 +16,14 @@ import (
 	"time"
 )
 
+var (
+	COLRESET    = "\033[0m"
+	COLBRGREEN  = "\033[1;32m"
+	COLBRBLUE   = "\033[1;34m"
+	COLBRYELLOW = "\033[1;33m"
+	COLGREY     = "\033[1;30m"
+)
+
 func init() {
 	flag.Usage = func() {
 		flag.PrintDefaults()
@@ -71,6 +79,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
+	fmt.Printf("  "+COLBRYELLOW+"->"+COLRESET+" %s\n", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -157,26 +166,32 @@ func runShell() {
 	tempScriptPath := ".scishell.bash"
 
 	shellCode := `#!/bin/bash -l
-echo "SciCommander Shell"
-echo "(Exit by pressing Ctrl+C)"
-echo "------------------------------------------------"
+echo "` + COLBRGREEN + `  ___     _  ___                              _         ";
+echo " / __| __(_)/ __|___ _ __  _ __  __ _ _ _  __| |___ _ _ ";
+echo " \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|";
+echo " |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  ";
+echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
+echo;
+echo "(Exit with Ctrl+C)"
 history -r .scishell.hist
 while true; do
-	read -ep "sci> " CMD
+	read -ep "` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
 	history -s "$CMD"
     if [[ $CMD == $'\04' ]]; then
         exit
-    elif [[ $CMD =~ (ls|ll|pwd|cd|vim|emacs|nano|less|more|history).* ]]; then
-        $CMD
+    elif [[ $CMD =~ (ls|ll|cd|vim|emacs|nano|history).* || $CMD =~ .*(less|more).* ]]; then
+		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
+        bash -c "$CMD"
     elif [[ $CMD == "" ]]; then
-        echo "Command was empty. Did you want to exit?"
+        echo "Command was empty!"
+		echo "Did you want to exit?"
         echo "Exit by pressing: Ctrl+C"
     else
-        echo "Executing command via SciCommander: $CMD"
+		echo "` + COLGREY + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
     fi
 done;
-history -w .scishell.hist
+history -a .scishell.hist
 echo "Exited SciCommander Shell"
 `
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)

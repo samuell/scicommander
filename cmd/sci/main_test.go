@@ -14,7 +14,11 @@ func TestDetectFiles(t *testing.T) {
 	os.Chdir(tmpDir)
 
 	// Arrange
-	wantInFiles := []string{"foo.txt", filepath.Join("bar", "baz.xyz"), filepath.Join("bar", "xyz.abc")}
+	wantInFiles := []string{
+		"foo.txt",
+		filepath.Join("bar", "baz.xyz"),
+		filepath.Join("bar", "xyz.abc"),
+	}
 	for _, f := range wantInFiles {
 		createDirAndFile(f)
 	}
