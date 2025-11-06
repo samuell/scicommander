@@ -84,13 +84,73 @@ sci -h
 
 There are then two main ways to use SciCommander:
 
-1. In bash scripts, using the `sci run` command.
-2. In shell mode, launched with the bare `sci` command. See further below for
-   info about that.
+1. In shell mode, launched with the bare `sci` command.
+2. In bash scripts, using the `sci run` command.
+
+## Easiest: Shell mode
+
+The simplest and easiest way to use SciCommander is via the shell mode,
+where you can execute you bash commands mostly as usual, while SciCommander
+makes sure they are logged to special audit files (named `.au`), which can
+later be converted to beautiful html-reports.
+
+To start the shell mode, just execute `sci` without parameters:
+
+```bash
+sci
+```
+
+Then you will see something like this:
+```bash
+  ___     _  ___                              _         
+ / __| __(_)/ __|___ _ __  _ __  __ _ _ _  __| |___ _ _ 
+ \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|
+ |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  
+>------------------------------------------------------>
+
+ Welcome to the SciCommander shell!
+ Commands executed here will be logged for provenance.
+ (Exit with Ctrl+C)
+
+ See also the other sci sub-commands:
+ > sci help
+ > sci run <command>
+ > sci to-html <file.au>
+ > sci shell (default)
+ (These can be executed both outside or inside the shell)
+
+sci>
+```
+
+Then, you can run some commands, such as the following few steps where we
+produce a sequence file and then compute its reverse complement.
+
+### Create a fasta file with some DNA
+```bash
+sci> echo AAAGCCCGTGGGGGACCTGTTC > dna.fa
+```
+
+### Compute the complement sequence
+```bash
+sci> cat dna.fa | tr ACGT TGCA > dna.compl.fa
+```
+
+### Reverse the DNA string
+```bash
+sci> cat dna.compl.fa | rev > dna.compl.rev.fa
+```
+
+### Convert the final audit file to HTML and open in browser
+```bash
+sci> to-html dna.compl.rev.fa.au
+```
+In other words, no extra syntax is needed.
+
 
 ## Using scicommander in scripts
 
-To get the benefits from SciCommander in reproducible scripts, do the following:
+To get the benefits from SciCommander in reproducible scripts on the other
+hand, you need to do the following:
 
 1. Prepend all your shell commands with the `sci run` command.
 2. Wrap the command itself in quotes, either `""` or `''`. This is not strictly
@@ -184,40 +244,6 @@ To convert this file to HTML and view it in a browser, you can do:
 ```bash
 sci to-html dna.compl.rev.fa.au
 ```
-
-## New: Shell mode
-
-There is experimental support for running SciCommander commands in bash,
-without needing to run them via the `sci run` command.
-
-To do this, start the SciCommander shell with just `sci` without parameters:
-
-```bash
-sci
-```
-
-And then, you can run the example commands above as follows:
-
-### Create a fasta file with some DNA
-```bash
-sci> echo AAAGCCCGTGGGGGACCTGTTC > dna.fa
-```
-
-### Compute the complement sequence
-```bash
-sc```i> cat dna.fa | tr ACGT TGCA > dna.compl.fa
-```
-
-### Reverse the DNA string
-```bash
-sci> cat dna.compl.fa | rev > dna.compl.rev.fa
-```
-
-### Convert the final audit file to HTML and open in browser
-```bash
-sci> to-html dna.compl.rev.fa.au
-```
-In other words, no extra syntax is needed.
 
 ## Notes
 
