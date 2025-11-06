@@ -83,7 +83,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	fmt.Printf("  "+COLGREEN+"->"+COLRESET+" %s\n", cmdStr)
+	fmt.Printf(COLGREEN+" ->"+COLRESET+" %s\n", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -227,8 +227,9 @@ while true; do
 		$CMD;
     elif [[ $CMD == "" ]]; then
 		echo "(Exit with Ctrl+C)"
+	elif [[ $CMD =~ ^(help|to-html|run|shell) ]]; then
+		sci $CMD;
     else
-		echo "` + COLGREEN + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
     fi
 	history -a .scishell.hist
