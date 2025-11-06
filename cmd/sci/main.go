@@ -186,7 +186,7 @@ while true; do
     elif [[ $CMD == "" ]]; then
         echo "Command was empty!"
 		echo "Did you want to exit?"
-        echo "Exit by pressing: Ctrl+C"
+        echo "Exit with Ctrl+C"
     else
 		echo "` + COLGREY + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
