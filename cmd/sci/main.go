@@ -166,6 +166,15 @@ func runShell() {
 	tempScriptPath := ".scishell.bash"
 
 	shellCode := `#!/bin/bash -l
+# Add some short-hand functions
+function ll() { ls -l; };
+function lltr() { ls -ltr; };
+function c() { cd $1; ls -l; echo; pwd; };
+export -f ll;
+export -f lltr;
+export -f c;
+
+# Print logo
 echo "` + COLBRGREEN + `  ___     _  ___                              _         ";
 echo " / __| __(_)/ __|___ _ __  _ __  __ _ _ _  __| |___ _ _ ";
 echo " \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|";
@@ -173,20 +182,24 @@ echo " |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  ";
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
 echo "(Exit with Ctrl+C)"
+
+# Handle fake-prompt
 history -r .scishell.hist
 while true; do
-	read -ep "` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
-	history -s "$CMD"
+	dirstr="[$(basename $(pwd))]"
+	read -ep "${dirstr} ` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
     if [[ $CMD == $'\04' ]]; then
         exit
-    elif [[ $CMD =~ (ls|ll|cd|vim|emacs|nano|history).* || $CMD =~ .*(less|more).* ]]; then
+    elif [[ $CMD =~ (ls|ll|lltr|vim|git|emacs|nano|history).* || $CMD =~ .*(less|more).* ]]; then
 		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
 		history -a .scishell.hist
+    elif [[ $CMD =~ (cd|c).* ]]; then
+		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
+		$CMD;
+		history -a .scishell.hist
     elif [[ $CMD == "" ]]; then
-        echo "Command was empty!"
-		echo "Did you want to exit?"
-        echo "Exit with Ctrl+C"
+		echo "(Exit with Ctrl+C)"
     else
 		echo "` + COLGREY + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
