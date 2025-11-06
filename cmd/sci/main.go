@@ -41,13 +41,13 @@ func main() {
 	flag.Parse()
 
 	if len(os.Args) < 2 {
-		fmt.Println("ERROR: No command supplied")
-		flag.Usage()
-		os.Exit(2)
-		return
+		// Run shell by default
+		runShell()
 	}
 
 	switch os.Args[1] {
+	case "help":
+		flag.Usage()
 	case "run":
 		cmdStr := strings.Join(os.Args[2:], " ")
 		executeCommand(cmdStr)
@@ -57,7 +57,8 @@ func main() {
 	case "shell":
 		runShell()
 	default:
-		fmt.Println("ERROR: Expected run or to-html")
+		fmt.Println("ERROR: Expected help, run, to-html or shell")
+		os.Exit(2)
 	}
 }
 
@@ -181,7 +182,17 @@ echo " \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|";
 echo " |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  ";
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
-echo "(Exit with Ctrl+C)"
+echo " Welcome to the SciCommander shell!"
+echo " Commands executed here will be logged for provenance."
+echo " (Exit with Ctrl+C)"
+echo;
+echo " See also the other sci sub-commands:"
+echo " ` + COLBRGREEN + `>` + COLRESET + ` sci help"
+echo " ` + COLBRGREEN + `>` + COLRESET + ` sci run <command>"
+echo " ` + COLBRGREEN + `>` + COLRESET + ` sci to-html <file.au>"
+echo " ` + COLBRGREEN + `>` + COLRESET + ` sci shell (default)"
+echo " (These can be executed both outside or inside the shell)"
+echo;
 
 # Handle fake-prompt
 history -r .scishell.hist
