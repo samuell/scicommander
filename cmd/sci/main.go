@@ -182,6 +182,7 @@ while true; do
     elif [[ $CMD =~ (ls|ll|cd|vim|emacs|nano|history).* || $CMD =~ .*(less|more).* ]]; then
 		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
+		history -a .scishell.hist
     elif [[ $CMD == "" ]]; then
         echo "Command was empty!"
 		echo "Did you want to exit?"
@@ -189,9 +190,9 @@ while true; do
     else
 		echo "` + COLGREY + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
+		history -a .scishell.hist
     fi
 done;
-history -a .scishell.hist
 echo "Exited SciCommander Shell"
 `
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)
