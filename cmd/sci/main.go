@@ -202,11 +202,11 @@ while true; do
 	history -s "$CMD"
     if [[ $CMD == $'\04' ]]; then
         exit
-    elif [[ $CMD =~ (ls|ll|lltr|vim|git|emacs|nano|history).* || $CMD =~ .*(less|more).* ]]; then
-		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
+	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
+		echo "` + COLGREY + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
-    elif [[ $CMD =~ (cd|c).* ]]; then
-		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
+	elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
+		echo "` + COLGREY + `Executing outside scicommander: [$CMD]` + COLRESET + `"
 		$CMD;
     elif [[ $CMD == "" ]]; then
 		echo "(Exit with Ctrl+C)"
@@ -218,6 +218,7 @@ while true; do
 done;
 echo "Exited SciCommander Shell"
 `
+	os.Remove(tempScriptPath)
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)
 	checkMsg(wrtErr, f("Could not write %s", tempScriptPath))
 
