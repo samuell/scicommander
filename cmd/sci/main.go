@@ -18,6 +18,8 @@ import (
 
 var (
 	COLRESET    = "\033[0m"
+	COLGREEN    = "\033[0;32m"
+	COLYELLOW   = "\033[0;33m"
 	COLBRGREEN  = "\033[1;32m"
 	COLBRBLUE   = "\033[1;34m"
 	COLBRYELLOW = "\033[1;33m"
@@ -80,7 +82,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	fmt.Printf("  "+COLBRYELLOW+"->"+COLRESET+" %s\n", cmdStr)
+	fmt.Printf("  "+COLGREEN+"->"+COLRESET+" %s\n", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -171,9 +173,11 @@ func runShell() {
 function ll() { ls -l; };
 function lltr() { ls -ltr; };
 function c() { cd $1; ls -l; echo; pwd; };
+function t() { tig; };
 export -f ll;
 export -f lltr;
 export -f c;
+export -f t;
 
 # Print logo
 echo "` + COLBRGREEN + `  ___     _  ___                              _         ";
@@ -202,16 +206,19 @@ while true; do
 	history -s "$CMD"
     if [[ $CMD == $'\04' ]]; then
         exit
-	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
-		echo "` + COLGREY + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|tig|t|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
+		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+        bash -c "$CMD"
+	elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
+		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
 	elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
-		echo "` + COLGREY + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
 		$CMD;
     elif [[ $CMD == "" ]]; then
 		echo "(Exit with Ctrl+C)"
     else
-		echo "` + COLGREY + `Executing via scicommander: [$CMD]` + COLRESET + `"
+		echo "` + COLGREEN + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
     fi
 	history -a .scishell.hist
