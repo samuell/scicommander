@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cmp"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -159,7 +160,16 @@ func toHtml(auditPath string) {
 	htmlPath := auditPath + ".html"
 	writeErr := ioutil.WriteFile(htmlPath, []byte(html), 0644)
 	checkMsg(writeErr, f("Error writing file %s", htmlPath))
+
 	fmt.Printf("Wrote HTML file to %s\n", htmlPath)
+	cwd, err := os.Getwd()
+	checkMsg(err, "Could not get current working directory")
+	fmt.Printf("file://%s/%s\n", cwd, htmlPath)
+	fmt.Println("(You might right-click the path above to open in a browser)")
+
+	cmd := exec.Command("bash", "-c", "open "+htmlPath)
+	err = cmd.Run()
+	checkMsg(err, "Could not run command: "+cmd.String())
 }
 
 func runShell() {
@@ -245,7 +255,9 @@ func getAllUpstreamAuditInfos(auditPath string) []AuditInfo {
 
 	auditInfos := []AuditInfo{}
 	for _, auditInfo := range auditInfoMap {
-		auditInfos = append(auditInfos, auditInfo)
+		if len(auditInfo.Executors) > 0 && !(auditInfo.Executors[0].Command[0] == "") {
+			auditInfos = append(auditInfos, auditInfo)
+		}
 	}
 
 	return auditInfos
@@ -296,7 +308,10 @@ func generateGraph(auditInfos []AuditInfo) (nodes []string, edges []StringTuple)
 	nodesSet := map[string]interface{}{}
 	edgesSet := map[string]StringTuple{}
 	for _, auditInfo := range auditInfos {
-		commandStr := strings.ReplaceAll(strings.Join(auditInfo.Executors[0].Command, " "), "\"", "\\\"")
+		commandStr := ""
+		if len(auditInfo.Executors) > 0 {
+			commandStr = strings.ReplaceAll(strings.Join(auditInfo.Executors[0].Command, " "), "\"", "\\\"")
+		}
 		nodesSet[commandStr] = nil
 		if len(auditInfo.Inputs) > 0 {
 			for _, input := range auditInfo.Inputs {
@@ -323,12 +338,19 @@ func generateGraph(auditInfos []AuditInfo) (nodes []string, edges []StringTuple)
 }
 
 func unmarshalAuditInfo(auditPath string) AuditInfo {
-	auditJson, readErr := ioutil.ReadFile(auditPath)
-	checkMsg(readErr, f("Error reading file %s", auditPath))
-	var auditInfo AuditInfo
-	err := json.Unmarshal([]byte(auditJson), &auditInfo)
-	checkMsg(err, "Failed to unmarshal JSON file "+auditPath)
-	return auditInfo
+	if _, statErr := os.Stat(auditPath); statErr == nil {
+		var auditInfo AuditInfo
+		auditJson, readErr := ioutil.ReadFile(auditPath)
+		checkMsg(readErr, f("Error reading file %s", auditPath))
+		err := json.Unmarshal([]byte(auditJson), &auditInfo)
+		checkMsg(err, "Failed to unmarshal JSON file "+auditPath)
+		return auditInfo
+	} else if errors.Is(statErr, os.ErrNotExist) {
+		return *NewAuditInfo("", nil, nil)
+	} else {
+		checkMsg(statErr, f("Error stat:ing file %s", auditPath))
+		return *NewAuditInfo("", nil, nil)
+	}
 }
 
 func auditInfosToHTML(auditInfos []AuditInfo, outPath string, svgPath string) (html string) {
