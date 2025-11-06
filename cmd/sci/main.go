@@ -25,6 +25,7 @@ var (
 	COLBRBLUE   = "\033[1;34m"
 	COLBRYELLOW = "\033[1;33m"
 	COLGREY     = "\033[1;30m"
+	VERSION     = "0.5.0"
 )
 
 func init() {
@@ -57,10 +58,12 @@ func main() {
 	case "to-html":
 		auditPath := strings.Join(os.Args[2:], " ")
 		toHtml(auditPath)
+	case "version":
+		fmt.Printf("SciCommander %s\n", VERSION)
 	case "shell":
 		runShell()
 	default:
-		fmt.Println("ERROR: Expected help, run, to-html or shell")
+		fmt.Println("ERROR: Expected help, run, to-html, version or shell")
 		os.Exit(2)
 	}
 }
@@ -227,7 +230,7 @@ while true; do
 		$CMD;
     elif [[ $CMD == "" ]]; then
 		echo "(Exit with Ctrl+C)"
-	elif [[ $CMD =~ ^(help|to-html|run|shell) ]]; then
+	elif [[ $CMD =~ ^(help|to-html|run|version|shell) ]]; then
 		sci $CMD;
     else
         sci run "$CMD"
