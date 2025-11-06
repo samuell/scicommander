@@ -280,12 +280,15 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 }
 
 func generateDot(auditInfos []AuditInfo) string {
-	nodes, edges := generateGraph(auditInfos)
+	cmdNodes, fileNodes, edges := generateGraph(auditInfos)
 
 	dot := "DIGRAPH G {\n"
-	dot += "  node [shape=box, style=filled, fillcolor=lightgrey, fontname=monospace, penwidth=0];\n"
-	for _, node := range nodes {
-		dot += f("  \"%s\"\n", node)
+	dot += "  node [shape=box, style=filled, fillcolor=lightgrey, fontname=monospace, penwidth=0, fontsize=11, pad=0];\n"
+	for _, node := range cmdNodes {
+		dot += f("  \"%s\" [fillcolor=\"#CCE2F1\"]\n", node)
+	}
+	for _, node := range fileNodes {
+		dot += f("  \"%s\" [fillcolor=\"#FFEEC8\"]\n", node)
 	}
 	for _, edge := range edges {
 		dot += f("  \"%s\" -> \"%s\"\n", edge.a, edge.b)
@@ -304,32 +307,37 @@ func (st StringTuple) String() string {
 	return st.a + "," + st.b
 }
 
-func generateGraph(auditInfos []AuditInfo) (nodes []string, edges []StringTuple) {
-	nodesSet := map[string]interface{}{}
+func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []string, edges []StringTuple) {
+	cmdNodesSet := map[string]interface{}{}
+	fileNodesSet := map[string]interface{}{}
 	edgesSet := map[string]StringTuple{}
 	for _, auditInfo := range auditInfos {
 		commandStr := ""
 		if len(auditInfo.Executors) > 0 {
 			commandStr = strings.ReplaceAll(strings.Join(auditInfo.Executors[0].Command, " "), "\"", "\\\"")
 		}
-		nodesSet[commandStr] = nil
+		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Inputs) > 0 {
 			for _, input := range auditInfo.Inputs {
 				edge := StringTuple{string(input), commandStr}
 				edgesSet[edge.String()] = edge
-				nodesSet[string(input)] = nil
+				fileNodesSet[string(input)] = nil
 			}
 		}
+		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Outputs) > 0 {
 			for _, output := range auditInfo.Outputs {
 				edge := StringTuple{commandStr, string(output)}
 				edgesSet[edge.String()] = edge
-				nodesSet[string(output)] = nil
+				fileNodesSet[string(output)] = nil
 			}
 		}
 	}
-	for node := range nodesSet {
-		nodes = append(nodes, node)
+	for node := range cmdNodesSet {
+		cmdNodes = append(cmdNodes, node)
+	}
+	for node := range fileNodesSet {
+		fileNodes = append(fileNodes, node)
 	}
 	for _, edge := range edgesSet {
 		edges = append(edges, edge)
@@ -361,21 +369,27 @@ func auditInfosToHTML(auditInfos []AuditInfo, outPath string, svgPath string) (h
 	html += "<head>\n"
 	html += "<style>\n"
 	html += `
+html {
+	background: #efefef;
+}
 body{
+	background: white;
 	font-family:monospace, courier new;
-	max-width: 1024px;
+	font-size: 9pt;
+	max-width: 960px;
 	margin: 0 auto;
 	box-shadow: 2px 2px 10px #ccc;
 	padding: 1em;\n
 }
 hr {
-	border: 2px solid #eee;
+	border: 2px solid #efefef;
 }
 table {
 	borders: none;
 }
 table td {
-	padding: 1em;
+	padding: .4em 1em;
+	text-align: left;
 }
 `
 	html += "</style>\n"
@@ -392,9 +406,9 @@ table td {
 
 	for _, auditInfo := range auditInfos {
 		command := strings.Join(auditInfo.Executors[0].Command, " ")
-		html += f("<tr><td>%s</td>"+
-			"<td style='background: #efefef;'>%s</td>"+
-			"<td>%d ms</tr>"+
+		html += f("<tr><td style=\"background: #E6F5FF;\">%s</td>"+
+			"<td style=\"background: #CCE2F1;\">%s</td>"+
+			"<td style=\"background: #E6F5FF;\">%d ms</tr>"+
 			"\n", auditInfo.Tags.StartTime.Format(time.RFC3339), command, auditInfo.Tags.Duration.Milliseconds())
 	}
 	html += "</table>"
