@@ -199,23 +199,22 @@ history -r .scishell.hist
 while true; do
 	dirstr="[$(basename $(pwd))]"
 	read -ep "${dirstr} ` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
+	history -s "$CMD"
     if [[ $CMD == $'\04' ]]; then
         exit
     elif [[ $CMD =~ (ls|ll|lltr|vim|git|emacs|nano|history).* || $CMD =~ .*(less|more).* ]]; then
 		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
-		history -a .scishell.hist
     elif [[ $CMD =~ (cd|c).* ]]; then
 		echo "` + COLGREY + `Not executing via scicommander: [$CMD]` + COLRESET + `"
 		$CMD;
-		history -a .scishell.hist
     elif [[ $CMD == "" ]]; then
 		echo "(Exit with Ctrl+C)"
     else
 		echo "` + COLGREY + `Executing via scicommander: [$CMD]` + COLRESET + `"
         sci run "$CMD"
-		history -a .scishell.hist
     fi
+	history -a .scishell.hist
 done;
 echo "Exited SciCommander Shell"
 `
