@@ -219,7 +219,10 @@ while true; do
 	history -s "$CMD"
     if [[ $CMD == $'\04' ]]; then
         exit
-	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|tig|t|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
+	elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
+		echo "` + COLYELLOW + `Executing outside scicommander: [${CMD:1}]` + COLRESET + `"
+		bash -c "${CMD:1}";
+	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|tig|tree|t|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
 		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
 	elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
