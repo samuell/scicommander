@@ -222,6 +222,8 @@ while true; do
 	elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
 		echo "` + COLYELLOW + `Executing outside scicommander: [${CMD:1}]` + COLRESET + `"
 		bash -c "${CMD:1}";
+	elif [[ "true" == $((echo $CMD | grep -Eq "^>.*") && echo true || echo false) ]]; then
+		sci run "${CMD:1}";
 	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|tig|tree|t|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
 		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
