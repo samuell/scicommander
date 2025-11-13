@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -74,8 +75,12 @@ func executeCommand(cmdStr string) {
 
 	inFiles, _ := detectFiles(cmdArgs)
 
-	filesBefore, err := filepath.Glob("./*")
-	checkMsg(err, "Could not glob folder before executing command!")
+	filesBefore := []string{}
+	err := filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
+		filesBefore = append(filesBefore, path)
+		return err
+	})
+	checkMsg(err, "Could not walk folder structure before executing command!")
 
 	// Execute the command
 	timeBefore := time.Now()
@@ -94,8 +99,12 @@ func executeCommand(cmdStr string) {
 	errMsg := f("Could not run command: %s\nSTDERR: %s\nSTDOUT: %s", cmdStr, cmd.Stderr, cmd.Stdout)
 	checkMsg(err, errMsg)
 
-	filesAfter, err := filepath.Glob("./*")
-	checkMsg(err, "Could not glob folder after executing command!")
+	filesAfter := []string{}
+	err = filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
+		filesAfter = append(filesAfter, path)
+		return err
+	})
+	checkMsg(err, "Could not walk folder structure after executing command!")
 
 	newFiles := []string{}
 	for _, file := range filesAfter {
