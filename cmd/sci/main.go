@@ -26,7 +26,7 @@ var (
 	COLBRBLUE   = "\033[1;34m"
 	COLBRYELLOW = "\033[1;33m"
 	COLGREY     = "\033[1;30m"
-	VERSION     = "0.5.0"
+	VERSION     = "0.5.1"
 )
 
 func init() {
