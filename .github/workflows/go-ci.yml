@@ -6,6 +6,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install apt packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
       - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v5
