@@ -147,6 +147,28 @@ sci> to-html dna.compl.rev.fa.au
 In other words, no extra syntax is needed.
 
 
+### Forcing commands to run outside or inside of SciCommander
+
+SciCommander has some default settings about some commands that are not run
+through the SciCommander run mechanism by default, such as `ls`, `cd`, `rm`
+etc. Sometimes you might want to override the default behaviour though.
+
+To force a command to run *outside* SciCommander, in the shell mode, you can
+prepend it with a `!` character, like so:
+
+```bash
+!cat myfile.txt
+```
+
+To force a command to actually run inside SciCommander (e.g. to capture
+provenance for it), you can prepend the command with a `>`, like so:
+
+```bash
+>ls -ltr > folder-content.txt
+```
+
+Then you will get an audit file for this output file, `file-content.txt.au`.
+
 ## Using scicommander in scripts
 
 To get the benefits from SciCommander in reproducible scripts on the other
