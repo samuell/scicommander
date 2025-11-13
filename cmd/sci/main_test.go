@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -29,9 +31,8 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 		},
 		{
 			commands: []string{
-				"mkdir -p o/ou/out",
 				"echo ACGT > seq.txt",
-				"rev seq.txt > o/ou/out/rev.txt",
+				"mkdir -p o/ou/out && rev seq.txt > o/ou/out/rev.txt",
 				"cat o/ou/out/rev.txt > rev.txt",
 			},
 			lastAuditInfo:  "rev.txt.au",
@@ -48,8 +49,17 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 		if haveAuditCount != tc.wantAuditCount {
 			t.Fatal(f("Wrong number of audit infos found! Expected %d but found %d", tc.wantAuditCount, haveAuditCount))
 		}
-	}
 
+		htmlPath := toHtml(tc.lastAuditInfo)
+		html, err := ioutil.ReadFile(htmlPath)
+		checkMsg(err, f("Could not read file %s", htmlPath))
+
+		for _, cmd := range tc.commands {
+			if !strings.Contains(string(html), cmd) {
+				t.Fatal(f("Could not find command [%s] in html-file %s", cmd, htmlPath))
+			}
+		}
+	}
 }
 
 func TestRunCommand(t *testing.T) {

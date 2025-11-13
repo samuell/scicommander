@@ -58,9 +58,10 @@ func main() {
 		executeCommand(cmdStr)
 	case "to-html":
 		auditPath := strings.Join(os.Args[2:], " ")
-		toHtml(auditPath)
+		htmlPath := toHtml(auditPath)
+		openHtmlFile(htmlPath)
 	case "version":
-		fmt.Printf("SciCommander %s\n", VERSION)
+		out("SciCommander %s", VERSION)
 	case "shell":
 		runShell()
 	default:
@@ -91,7 +92,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	fmt.Printf(COLGREEN+" ->"+COLRESET+" %s\n", cmdStr)
+	out(COLGREEN+" ->"+COLRESET+" %s", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -115,6 +116,7 @@ func executeCommand(cmdStr string) {
 
 	for _, newFile := range newFiles {
 		newAuditFile := newFile + ".au"
+
 		auditInfo := NewAuditInfo(cmdStr, inFiles, newFiles)
 		auditInfo.Tags.StartTime = timeBefore
 		auditInfo.Tags.EndTime = timeAfter
@@ -155,7 +157,7 @@ func detectFiles(strs []string) ([]string, []string) {
 	return inFiles, outFiles
 }
 
-func toHtml(auditPath string) {
+func toHtml(auditPath string) string {
 	auditInfos := getAllUpstreamAuditInfos(auditPath)
 
 	outPath := auditPath[0 : len(auditPath)-3]
@@ -179,8 +181,12 @@ func toHtml(auditPath string) {
 	fmt.Printf("file://%s/%s\n", cwd, htmlPath)
 	fmt.Println("(You might right-click the path above to open in a browser)")
 
+	return htmlPath
+}
+
+func openHtmlFile(htmlPath string) {
 	cmd := exec.Command("bash", "-c", "open "+htmlPath)
-	err = cmd.Run()
+	err := cmd.Run()
 	checkMsg(err, "Could not run command: "+cmd.String())
 }
 
@@ -289,7 +295,7 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 
 	// Recursively call this same method
 	for _, inputPath := range auditInfo.Inputs {
-		fullInputPath := filepath.Join(baseDir, inputPath+".au")
+		fullInputPath := inputPath + ".au"
 		inputAuditInfos := getInputAuditInfos(fullInputPath, baseDir)
 		for inputPath, inputAuditInfo := range inputAuditInfos {
 			auditInfos[inputPath] = inputAuditInfo
