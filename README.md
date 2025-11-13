@@ -22,6 +22,11 @@ down the road, such as:
 
 ## News
 
+- **Nov 13, 2025**: New releases: We recently released
+  [0.5.0](https://github.com/samuell/scicommander/releases/tag/0.5.0) with much
+  improved usability, and soon after
+  [0.5.1](https://github.com/samuell/scicommander/releases/tag/0.5.1) with an
+  important bugfix for handling outputs in subdirectories.
 - **Sep 3, 2024:** A blog post and poster about the new Go version of SciCommander
   is [now published here](https://livesys.se/posts/rewrite-of-scicommander-in-go/).
 - **Aug 16, 2024:** Version 0.4 released, which is a complete rewrite of the
