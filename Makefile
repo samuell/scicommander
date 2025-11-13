@@ -8,8 +8,6 @@ build:
 test:
 	go test ./...
 
-build-all: build-linux-amd64 build-windows-amd64 build-mac-intel build-mac-m
-
 release: scicommander-${VERSION}-linux-amd64.tar.gz \
 	scicommander-${VERSION}-windows-amd64.zip \
 	scicommander-${VERSION}-mac-amd64.tar.gz \
@@ -38,5 +36,3 @@ mac-intel/sci:
 
 mac-m/sci:
 	GOOS=darwin GOARCH=arm64 go build -o mac-m/sci ./...
-
-
