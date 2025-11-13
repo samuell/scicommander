@@ -107,10 +107,15 @@ func executeCommand(cmdStr string) {
 	})
 	checkMsg(err, "Could not walk folder structure after executing command!")
 
+	// Only store files which did not exist before and is not a directory
 	newFiles := []string{}
 	for _, file := range filesAfter {
 		if !slices.Contains(filesBefore, file) {
-			newFiles = append(newFiles, file)
+			fileInfo, err := os.Stat(file)
+			checkMsg(err, f("Could not stat file: %s", file))
+			if !fileInfo.IsDir() {
+				newFiles = append(newFiles, file)
+			}
 		}
 	}
 

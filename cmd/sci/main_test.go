@@ -16,9 +16,10 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 	os.Chdir(tmpDir)
 
 	type testCase struct {
-		commands       []string
-		lastAuditInfo  string
-		wantAuditCount int
+		commands           []string
+		lastAuditInfo      string
+		wantAuditCount     int
+		wantCommandsInHTML []string
 	}
 
 	tests := []testCase{
@@ -38,6 +39,31 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 			lastAuditInfo:  "rev.txt.au",
 			wantAuditCount: 3,
 		},
+		{
+			commands: []string{
+				"echo ACGT > s.txt",
+				"mkdir -p o/ou/out && rev s.txt > o/ou/out/r.txt",
+				"cat o/ou/out/r.txt > r.txt",
+			},
+			lastAuditInfo:  "r.txt.au",
+			wantAuditCount: 3,
+		},
+		{
+			commands: []string{
+				"cat rev.txt r.txt > rev-and-r.txt",
+			},
+			lastAuditInfo:  "rev-and-r.txt.au",
+			wantAuditCount: 7,
+			wantCommandsInHTML: []string{
+				"echo ACGT > seq.txt",
+				"mkdir -p o/ou/out && rev seq.txt > o/ou/out/rev.txt",
+				"cat o/ou/out/rev.txt > rev.txt",
+				"echo ACGT > s.txt",
+				"mkdir -p o/ou/out && rev s.txt > o/ou/out/r.txt",
+				"cat o/ou/out/r.txt > r.txt",
+				"cat rev.txt r.txt > rev-and-r.txt",
+			},
+		},
 	}
 
 	for _, tc := range tests {
@@ -54,7 +80,12 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 		html, err := ioutil.ReadFile(htmlPath)
 		checkMsg(err, f("Could not read file %s", htmlPath))
 
-		for _, cmd := range tc.commands {
+		checkForCommands := tc.commands
+		if tc.wantCommandsInHTML != nil {
+			checkForCommands = tc.wantCommandsInHTML
+		}
+
+		for _, cmd := range checkForCommands {
 			if !strings.Contains(string(html), cmd) {
 				t.Fatal(f("Could not find command [%s] in html-file %s", cmd, htmlPath))
 			}
