@@ -247,6 +247,7 @@ echo "Exited SciCommander Shell"
 	os.Remove(tempScriptPath)
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)
 	checkMsg(wrtErr, f("Could not write %s", tempScriptPath))
+	defer os.Remove(tempScriptPath)
 
 	args := []string{"-i", tempScriptPath}
 
