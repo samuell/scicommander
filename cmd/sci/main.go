@@ -239,7 +239,7 @@ while true; do
 		bash -c "${CMD:1}";
 	elif [[ "true" == $((echo $CMD | grep -Eq "^>.*") && echo true || echo false) ]]; then
 		sci run "${CMD:1}";
-	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|git|tig|tree|t|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
+	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|rm|git|tig|tree|t|vim|emacs|nano|history)\>.*") && echo true || echo false) ]]; then
 		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
 	elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
