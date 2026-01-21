@@ -6,6 +6,16 @@ SciCommander
 This is a small tool that executes single shell commands in a scientifically
 more reproducible and robust way, by doing the following things:
 
+## Contents
+
+- [Features](#features)
+- [Roadmap](#roadmap)
+- [News](#news)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Example](#example)
+- [Quoting caveats](#quoting-caveats)
+
 ## Features
 
 - Auditing: Creating an audit log of most output files
@@ -272,8 +282,39 @@ To convert this file to HTML and view it in a browser, you can do:
 sci to-html dna.compl.rev.fa.au
 ```
 
+## Quoting caveats
+
+Note that there are a number of caveats to think about when quoting complex commands.
+Based on things we have noted ourselves, we are noting a few of them here that might
+be relevant when using SciCommander:
+
+1. Generally, use double quotes (`""`) to enclose longer strings. This is
+   because strings enclosed in single quotes (`''`) can not contain escaped
+   single quotes (`\'`), as these will not be escaped, but will be interpreted
+   as closing the single-quoted string. This is because single quotes in Unix
+   means that all the content is interpreted litterally.
+2. Note though, when using double quotes, that some characters need to be escaped:
+   - Any `$` needs to be escaped as `\$`
+   - Any internal `"` needs to be escaped as `\"`
+   - Any backslashes `\` that you want to keep, need to be escaped with another backslash: `\\`
+   - This includes backslashes followed by a newline, which are otherwise removed from the string, including the newline
+   - Any backticks ``` ` ``` need to be quoted as ``` \` ```
+
+This means that a command such as:
+
+```bash
+ps aux | tr ' ' '\t' | awk -F"\t" '{ print $1 }' | sort | uniq -c | sort -nr | tee top-users.txt
+```
+
+... should typically be quoted and ran like so:
+
+```bash
+sci run "ps aux | tr ' ' '\t' | awk -F\"\t\" '{ print \$1 }' | sort | uniq -c | sort -nr | tee top-users.txt"
+```
+
 ## Notes
 
-[1] Although Nextflow and Snakemake already take care of some of the benefits,
-such as atomic writes, SciCommander adds additional features such as detailed
-per-output audit logs. It can thus be a great complement to these tools.
+[1] Although scientific workflow managers like [SciPipe](https://scipipe.org), [Snakemake](https://snakemake.github.io/)
+and [Nextflow](https://nextflow.io/) already take care of some of the benefits, such as atomic writes, SciCommander
+adds additional features such as detailed per-output audit logs. It can thus be
+a great complement to these tools.
