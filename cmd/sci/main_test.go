@@ -78,8 +78,11 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 		}
 
 		htmlPath := toHtml(tc.lastAuditInfo)
-		html, err := ioutil.ReadFile(htmlPath)
+		htmlBytes, err := ioutil.ReadFile(htmlPath)
 		checkMsg(err, f("Could not read file %s", htmlPath))
+
+		// Clean out formatting added to make commands more compact
+		html := strings.ReplaceAll(string(htmlBytes), "\\ <br>&nbsp;&nbsp;", "")
 
 		checkForCommands := tc.commands
 		if tc.wantCommandsInHTML != nil {
@@ -87,7 +90,7 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 		}
 
 		for _, cmd := range checkForCommands {
-			if !strings.Contains(string(html), cmd) {
+			if !strings.Contains(html, cmd) {
 				t.Fatal(f("Could not find command [%s] in html-file %s", cmd, htmlPath))
 			}
 		}

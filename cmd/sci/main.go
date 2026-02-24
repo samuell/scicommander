@@ -329,11 +329,11 @@ func generateDot(auditInfos []AuditInfo) string {
 
 	dot := "DIGRAPH G {\n"
 	dot += "  node [shape=box, style=filled, fillcolor=lightgrey, fontname=monospace, penwidth=0, fontsize=11, pad=0];\n"
-	for _, node := range cmdNodes {
-		dot += f("  \"%s\" [fillcolor=\"#CCE2F1\"]\n", node)
+	for _, cmd := range cmdNodes {
+		dot += f("  \"%s\" [fillcolor=\"#CCE2F1\"]\n", cmd)
 	}
-	for _, node := range fileNodes {
-		dot += f("  \"%s\" [fillcolor=\"#FFEEC8\"]\n", node)
+	for _, file := range fileNodes {
+		dot += f("  \"%s\" [fillcolor=\"#FFEEC8\"]\n", file)
 	}
 	for _, edge := range edges {
 		dot += f("  \"%s\" -> \"%s\"\n", edge.a, edge.b)
@@ -360,6 +360,7 @@ func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []strin
 		commandStr := ""
 		if len(auditInfo.Executors) > 0 {
 			commandStr = strings.ReplaceAll(strings.Join(auditInfo.Executors[0].Command, " "), "\"", "\\\"")
+			commandStr = foldCommand(commandStr, "\\l", " ", "\\\\")
 		}
 		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Inputs) > 0 {
@@ -421,16 +422,17 @@ body{
 	background: white;
 	font-family:monospace, courier new;
 	font-size: 9pt;
-	max-width: 960px;
+	width: 90%;
 	margin: 0 auto;
 	box-shadow: 2px 2px 10px #ccc;
-	padding: 1em;\n
+	padding: 1em;
 }
 hr {
 	border: 2px solid #efefef;
 }
 table {
 	borders: none;
+	width: 100%;
 }
 table td {
 	padding: .4em 1em;
@@ -451,6 +453,7 @@ table td {
 
 	for _, auditInfo := range auditInfos {
 		command := strings.Join(auditInfo.Executors[0].Command, " ")
+		command = foldCommand(command, "<br>", "&nbsp;", "\\")
 		html += f("<tr><td style=\"background: #E6F5FF;\">%s</td>"+
 			"<td style=\"background: #CCE2F1;\">%s</td>"+
 			"<td style=\"background: #E6F5FF;\">%d ms</tr>"+
@@ -476,6 +479,26 @@ func checkMsg(err error, message string) {
 		fmt.Println(err)
 		os.Exit(126)
 	}
+}
+
+func foldCommand(cmdStr string, newLineStr string, spaceStr string, backSlashStr string) (foldedCmd string) {
+	foldedCmd = ""
+	foldNextLine := true
+	for i, cp := range strings.Split(cmdStr, " ") {
+		if string(cp[0]) == "-" {
+			foldedCmd += backSlashStr + " " + newLineStr + spaceStr + spaceStr + cp + " "
+			foldNextLine = false
+		} else {
+			if foldNextLine && i > 0 {
+				foldedCmd += backSlashStr + " " + newLineStr + spaceStr + spaceStr + cp + " "
+			} else {
+				foldedCmd += cp + " "
+			}
+			foldNextLine = true
+		}
+	}
+	foldedCmd = foldedCmd + newLineStr
+	return foldedCmd
 }
 
 func f(s string, v ...interface{}) string {
