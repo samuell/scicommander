@@ -71,10 +71,11 @@ func main() {
 }
 
 func executeCommand(cmdStr string) {
-	cmdParts := strings.Split(cmdStr, " ")
-	cmdArgs := cmdParts[1:]
-
-	inFiles, _ := detectFiles(cmdArgs)
+	inFiles, existingOutFiles, _ := detectFiles(cmdStr)
+	if len(existingOutFiles) > 0 {
+		out(COLYELLOW + " [x]" + COLRESET + " " + cmdStr)
+		return
+	}
 
 	filesBefore := []string{}
 	err := filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
@@ -92,7 +93,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	out(COLGREEN+" ->"+COLRESET+" %s", cmdStr)
+	out(COLGREEN+" [>]"+COLRESET+" %s", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -135,31 +136,45 @@ func executeCommand(cmdStr string) {
 	}
 }
 
-func detectFiles(strs []string) ([]string, []string) {
+func detectFiles(cmdStr string) ([]string, []string, []string) {
+	cmdParts := strings.Split(cmdStr, " ")
+	cmdArgs := cmdParts[1:]
+
 	inFiles := []string{}
-	outFiles := []string{}
+	existingOutFiles := []string{}
+	newOutFiles := []string{}
 
 	filtered := []string{}
 	nonPaths := []string{">", "|", ">>", ">>>", "<", "<<", "<<<"}
-	for _, s := range strs {
-		if !slices.Contains(nonPaths, s) {
-			filtered = append(filtered, s)
+	for _, ca := range cmdArgs {
+		if !slices.Contains(nonPaths, ca) {
+			filtered = append(filtered, ca)
 		}
 	}
 
-	for _, str := range filtered {
-		if _, err := os.Stat(str); os.IsNotExist(err) {
-			outFiles = append(outFiles, str)
+	for _, cmdPart := range filtered {
+		if _, err := os.Stat(cmdPart); os.IsNotExist(err) {
+			// If the file does not exist, treat as an (non-existent) output file, so do nothing
+			newOutFiles = append(newOutFiles, cmdPart)
 		} else {
-			auditPath := str + ".au"
+			// If the file does exist, check if it has an audit file
+			auditPath := cmdPart + ".au"
 			if _, err := os.Stat(auditPath); os.IsNotExist(err) {
-				inFiles = append(inFiles, str)
+				// If it lacks an audit file, treat as input file
+				inFiles = append(inFiles, cmdPart)
 			} else {
-				inFiles = append(inFiles, str)
+				// If it has an audit file, check if the command is the same
+				detectedAuditInfo := unmarshalAuditInfo(auditPath)
+				detectedCommand := strings.Join(detectedAuditInfo.Executors[0].Command, " ")
+				if detectedCommand == cmdStr {
+					// If the audit info has the same command, detect as an existing outfile
+					existingOutFiles = append(existingOutFiles, cmdPart)
+				}
+				inFiles = append(inFiles, cmdPart)
 			}
 		}
 	}
-	return inFiles, outFiles
+	return inFiles, existingOutFiles, newOutFiles
 }
 
 func toHtml(auditPath string) string {
