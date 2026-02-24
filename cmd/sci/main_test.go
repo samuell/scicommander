@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -122,6 +123,47 @@ func TestRunCommand(t *testing.T) {
 	}
 }
 
+func TestSkipOnExistingOutputFiles(t *testing.T) {
+	tmpDir := t.TempDir()
+	fmt.Printf("Moving into %v ...\n", tmpDir)
+	os.Chdir(tmpDir)
+
+	type testCase struct {
+		command          string
+		wantOutFiles     []string
+		dontWantOutFiles []string
+	}
+
+	tests := []testCase{
+		{
+			command:          "echo ACGT | tee seq.txt > seq2.txt",
+			wantOutFiles:     []string{"seq.txt"},
+			dontWantOutFiles: []string{"seq2.txt"},
+		},
+	}
+
+	for _, tc := range tests {
+		executeCommand(tc.command)
+		for _, wantedOutFile := range tc.wantOutFiles {
+			if _, err := os.Stat(wantedOutFile); os.IsNotExist(err) {
+				t.Fatal(f("Could not find wanted outfile %s after execution of [%s]", wantedOutFile, tc.command))
+			}
+			wantedAuditFile := wantedOutFile + ".au"
+			if _, err := os.Stat(wantedAuditFile); os.IsNotExist(err) {
+				t.Fatal(f("Could not find wanted audit file %s after execution of [%s]", wantedAuditFile, tc.command))
+			}
+		}
+		executeCommand(tc.command)
+		for _, unwantedFile := range tc.dontWantOutFiles {
+			err := os.Remove(unwantedFile)
+			checkMsg(err, "Could not remove unwanted file: "+unwantedFile)
+			if _, err := os.Stat(unwantedFile); !os.IsNotExist(err) {
+				t.Fatal(f("Found unwanted outfile %s after trying execution of command to skip [%s]", unwantedFile, tc.command))
+			}
+		}
+	}
+}
+
 func TestDetectFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 	fmt.Printf("Moving into %v ...\n", tmpDir)
@@ -137,31 +179,26 @@ func TestDetectFiles(t *testing.T) {
 		createDirAndFile(f)
 	}
 
-	wantOutFiles := []string{"out.png", filepath.Join("out", "someresult.tar.gz")}
+	wantOutFiles := []string{
+		"tee", // We can easily not know for sure if this is a command or an output file
+		"out.png",
+		filepath.Join("out", "someresult.tar.gz")}
 
 	type testCase struct {
 		command []string
 	}
 
-	stringsToCheck := []string{
-		"foo.txt",
-		"out.png",
-		">",
-		"|",
-		filepath.Join("bar", "baz.xyz"),
-		filepath.Join("bar", "xyz.abc"),
-		filepath.Join("out", "someresult.tar.gz"),
-	}
+	exampleCommand := "echo foo.txt bar/baz.xyz bar/xyz.abc | tee out.png > out/someresult.tar.gz"
 
 	// Act
-	haveInFiles, haveOutFiles := detectFiles(stringsToCheck)
+	haveInFiles, _, inferredNewOutFiles := detectFiles(exampleCommand)
 
 	// Assert
 	if !reflect.DeepEqual(haveInFiles, wantInFiles) {
 		t.Fatalf("Wanted infiles %v but got %v\n", wantInFiles, haveInFiles)
 	}
-	if !reflect.DeepEqual(haveOutFiles, wantOutFiles) {
-		t.Fatalf("Wanted outfiles %v but got %v\n", wantOutFiles, haveOutFiles)
+	if !reflect.DeepEqual(inferredNewOutFiles, wantOutFiles) {
+		t.Fatalf("Wanted outfiles %v but got %v\n", wantOutFiles, inferredNewOutFiles)
 	}
 }
 
@@ -173,4 +210,26 @@ func createDirAndFile(filePath string) {
 	}
 	_, err := os.Create(filePath)
 	checkMsg(err, "Could not create file: "+filePath)
+}
+
+func printFilesInDir(dir string) {
+	var currentFiles []string
+	root := os.DirFS(dir)
+	files1, err := fs.Glob(root, "**/*") // Matches recursively
+	checkMsg(err, "Could not glob")
+	for _, f := range files1 {
+		currentFiles = append(currentFiles, filepath.Join(dir, f))
+	}
+	files2, err := fs.Glob(root, "*") // Matches recursively
+	checkMsg(err, "Could not glob")
+	for _, f := range files2 {
+		currentFiles = append(currentFiles, filepath.Join(dir, f))
+	}
+
+	out("--------------------------------------------------------------------------------")
+	out("Current files in [%s]:", dir)
+	for _, cf := range currentFiles {
+		out("File: %s", cf)
+	}
+	out("--------------------------------------------------------------------------------")
 }
