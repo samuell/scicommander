@@ -34,14 +34,14 @@ func init() {
 		flag.PrintDefaults()
 		fmt.Println(`Usage:
 sci run <command>
-sci to-html <audit-file>
+sci htmlize <audit-file>
 sci shell`)
 	}
 }
 
 func main() {
 	flag.NewFlagSet("run", flag.ExitOnError)
-	flag.NewFlagSet("to-html", flag.ExitOnError)
+	flag.NewFlagSet("htmlize", flag.ExitOnError)
 	flag.NewFlagSet("shell", flag.ExitOnError)
 	flag.Parse()
 
@@ -56,7 +56,7 @@ func main() {
 	case "run":
 		cmdStr := strings.Join(os.Args[2:], " ")
 		executeCommand(cmdStr)
-	case "to-html":
+	case "htmlize":
 		auditPath := strings.Join(os.Args[2:], " ")
 		htmlPath := toHtml(auditPath)
 		openHtmlFile(htmlPath)
@@ -65,7 +65,7 @@ func main() {
 	case "shell":
 		runShell()
 	default:
-		fmt.Println("ERROR: Expected help, run, to-html, version or shell")
+		fmt.Println("ERROR: Expected help, run, htmlize, version or shell")
 		os.Exit(2)
 	}
 }
@@ -241,7 +241,7 @@ echo;
 echo " See also the other sci sub-commands:"
 echo " ` + COLBRGREEN + `>` + COLRESET + ` sci help"
 echo " ` + COLBRGREEN + `>` + COLRESET + ` sci run <command>"
-echo " ` + COLBRGREEN + `>` + COLRESET + ` sci to-html <file.au>"
+echo " ` + COLBRGREEN + `>` + COLRESET + ` sci htmlize <file.au>"
 echo " ` + COLBRGREEN + `>` + COLRESET + ` sci shell (default)"
 echo " (These can be executed both outside or inside the shell)"
 echo;
@@ -270,7 +270,7 @@ while true; do
 		$CMD;
     elif [[ $CMD == "" ]]; then
 		echo "(Exit with Ctrl+C)"
-	elif [[ $CMD =~ ^(help|to-html|run|version|shell) ]]; then
+	elif [[ $CMD =~ ^(help|htmlize|run|version|shell) ]]; then
 		sci $CMD;
     else
         sci run "$CMD"
