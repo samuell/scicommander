@@ -146,13 +146,13 @@ func detectFiles(cmdStr string) (inFiles []string, existingOutFiles []string, ne
 	}
 
 	for _, cmdPart := range filtered {
-		if _, err := os.Stat(cmdPart); os.IsNotExist(err) {
+		if stat, err := os.Stat(cmdPart); os.IsNotExist(err) {
 			// If the file does not exist, treat as an (non-existent) output file (we don't know if it is an output file or dir)
 			newOutFiles = append(newOutFiles, cmdPart)
 		} else {
 			// If the file does exist, check if it has an audit file
 			auditPath := cmdPart + ".au"
-			if stat, err := os.Stat(auditPath); os.IsNotExist(err) {
+			if _, err := os.Stat(auditPath); os.IsNotExist(err) {
 				// If it lacks an audit file, treat as input file
 				inFiles = append(inFiles, cmdPart)
 			} else {
@@ -166,7 +166,7 @@ func detectFiles(cmdStr string) (inFiles []string, existingOutFiles []string, ne
 						if !walkPathStat.IsDir() {
 							auPath := walkPath + ".au"
 							if _, statErr := os.Stat(auPath); !os.IsNotExist(statErr) {
-								detectedAuditInfo := unmarshalAuditInfo(auditPath)
+								detectedAuditInfo := unmarshalAuditInfo(auPath)
 								detectedCommand := strings.Join(detectedAuditInfo.Executors[0].Command, " ")
 								if detectedCommand == cmdStr {
 									// If the audit info has the same command, detect as an existing outfile
