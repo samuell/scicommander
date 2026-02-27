@@ -126,6 +126,14 @@ func TestRunCommand(t *testing.T) {
 	}
 }
 
+// TestSkipOnExistingOutputFiles runs a command, then deletes one of the files,
+// and runs the command again. Then it checks that the correct files remain,
+// and the correct ones are deleted.
+//
+// Expected behavior is that existing *files* previously created should cause
+// the second execution to be skipped, while existing *folders* should not
+// (since folders might or might not contain the files to be produced by a
+// command.
 func TestSkipOnExistingOutputFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 	fmt.Printf("Moving into %v ...\n", tmpDir)
@@ -133,6 +141,7 @@ func TestSkipOnExistingOutputFiles(t *testing.T) {
 
 	type testCase struct {
 		command          string
+		removeFiles      []string
 		wantOutFiles     []string
 		dontWantOutFiles []string
 	}
@@ -140,12 +149,30 @@ func TestSkipOnExistingOutputFiles(t *testing.T) {
 	tests := []testCase{
 		{
 			command:          "echo ACGT | tee seq.txt > seq2.txt",
+			removeFiles:      []string{"seq2.txt"},
 			wantOutFiles:     []string{"seq.txt"},
 			dontWantOutFiles: []string{"seq2.txt"},
+		},
+		{
+			command:          "echo ACGT | tee seqa.txt > seqb.txt",
+			removeFiles:      []string{"seqa.txt"},
+			wantOutFiles:     []string{"seqb.txt"},
+			dontWantOutFiles: []string{"seqa.txt"},
+		},
+		{
+			command:          "mkdir -p out && echo ACGT > seq3.txt",
+			removeFiles:      []string{"out"},
+			wantOutFiles:     []string{"seq3.txt"},
+			dontWantOutFiles: []string{"out"},
 		},
 	}
 
 	for _, tc := range tests {
+		executeCommand(tc.command)
+		for _, fileToRemove := range tc.removeFiles {
+			err := os.Remove(fileToRemove)
+			checkMsg(err, "Could not remove unwanted file: "+fileToRemove)
+		}
 		executeCommand(tc.command)
 		for _, wantedOutFile := range tc.wantOutFiles {
 			if _, err := os.Stat(wantedOutFile); os.IsNotExist(err) {
@@ -156,10 +183,7 @@ func TestSkipOnExistingOutputFiles(t *testing.T) {
 				t.Fatal(f("Could not find wanted audit file %s after execution of [%s]", wantedAuditFile, tc.command))
 			}
 		}
-		executeCommand(tc.command)
 		for _, unwantedFile := range tc.dontWantOutFiles {
-			err := os.Remove(unwantedFile)
-			checkMsg(err, "Could not remove unwanted file: "+unwantedFile)
 			if _, err := os.Stat(unwantedFile); !os.IsNotExist(err) {
 				t.Fatal(f("Found unwanted outfile %s after trying execution of command to skip [%s]", unwantedFile, tc.command))
 			}
@@ -194,7 +218,7 @@ func TestDetectFiles(t *testing.T) {
 	exampleCommand := "echo foo.txt bar/baz.xyz bar/xyz.abc | tee out.png > out/someresult.tar.gz"
 
 	// Act
-	haveInFiles, _, inferredNewOutFiles := detectFiles(exampleCommand)
+	haveInFiles, _, inferredNewOutFiles, _, _ := detectFiles(exampleCommand)
 
 	// Assert
 	if !reflect.DeepEqual(haveInFiles, wantInFiles) {
