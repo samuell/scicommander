@@ -251,7 +251,7 @@ echo " \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|";
 echo " |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  ";
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
-echo " Welcome to the SciCommander shell! (Exit with Ctrl+C)"
+echo " Welcome to the shell feature of SciCommander version ` + VERSION + ` (Exit with Ctrl+C)"
 echo " For more info and help see: https://github.com/samuell/scicommander"
 echo;
 echo " Run commands here just like normal. Most commands except some interactive"
