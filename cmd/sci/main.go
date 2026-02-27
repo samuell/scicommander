@@ -260,14 +260,18 @@ echo;
 echo " Run commands here just like normal. Most commands except some interactive"
 echo " ones will then be executed via SciCommander and logged for provenance."
 echo;
-echo " To force execution via SciCommander, prepend with '>':"
-echo " ` + COLBRGREEN + `sci>` + COLRESET + ` >ls -l > files.txt"
+echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
-echo " To force execution outside SciCommander e.g. to show output on screen, prepend with '!':"
-echo " ` + COLBRGREEN + `sci>` + COLRESET + ` !cat files.txt"
+echo " To force execution via SciCommander, prepend with ` + COLYELLOW + `>` + COLRESET + `:"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` ` + COLYELLOW + `>` + COLRESET + `ls -l > files.txt"
+echo;
+echo " To force execution outside SciCommander e.g. to show output on screen, prepend with ` + COLYELLOW + `!` + COLRESET + `:"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` ` + COLYELLOW + `!` + COLRESET + `cat files.txt"
 echo;
 echo " To create and open an HTML report from an audit file, run:"
 echo " ` + COLBRGREEN + `sci>` + COLRESET + ` htmlize <files.txt.au>"
+echo;
+echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
 
 # Handle fake-prompt
