@@ -74,7 +74,7 @@ func main() {
 func executeCommand(cmdStr string) {
 	inFiles, existingOutFiles, _, _, _ := detectFiles(cmdStr)
 	if len(existingOutFiles) > 0 {
-		out(COLYELLOW + " [x]" + COLRESET + " " + cmdStr)
+		out(COLYELLOW+"[x] Skipping:"+COLRESET+" %s"+COLYELLOW+" (existing outputs)"+COLRESET, cmdStr)
 		return
 	}
 
@@ -94,7 +94,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	out(COLGREEN+" [>]"+COLRESET+" %s", cmdStr)
+	out(COLBRGREEN+"[>] Executing:"+COLRESET+" %s", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -285,20 +285,20 @@ while true; do
     elif [[ $CMD == "exit" ]]; then
         break;
     elif [[ $CMD == "sci" ]]; then
-		echo "Uh-oh! You can't run SciCommander inside SciCommander :-o"
+		echo "` + COLYELLOW + `Uh-oh! You can't run SciCommander shell inside SciCommander shell :-o` + COLRESET + `"
     elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing outside scicommander: [${CMD:1}]` + COLRESET + `"
+        echo "` + COLYELLOW + `[!] Executing externally: ${CMD:1}` + COLRESET + `"
         bash -c "${CMD:1}";
     elif [[ "true" == $((echo $CMD | grep -Eq "^>.*") && echo true || echo false) ]]; then
         sci run "${CMD:1}";
     elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|rm|git|tig|tree|t|vim|emacs|nano|history|man)\>.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+        echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
     elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+        echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
     elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+        echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
         $CMD;
     elif [[ $CMD =~ ^(help|htmlize|run|version|shell) ]]; then
        sci $CMD;
