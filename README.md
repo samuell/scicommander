@@ -6,16 +6,6 @@ SciCommander
 This is a small tool that executes single shell commands in a scientifically
 more reproducible and robust way, by doing the following things:
 
-## Contents
-
-- [Features](#features)
-- [Roadmap](#roadmap)
-- [News](#news)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Example](#example)
-- [Quoting caveats](#quoting-caveats)
-
 ## Features
 
 - Caching: Skipping executions where output files already exist. This greatly
@@ -33,9 +23,19 @@ more reproducible and robust way, by doing the following things:
 There are also some further features that are planned to be introduced further
 down the road, such as:
 
+- Bash script generation: Ability to generate a bash script with all the
+  commands used to create any specific output.
 - Atomic writes - Writes files to a temporary location (such as a sub-folder)
-  until command is finished, so that they are never placed at their final
-  destination before completely finished.
+  until command is finished, so that you never end up with truncated data if a
+  command crashes.
+
+## Limitations
+
+Below we list notable limitations, where it is not yet clear if we will address
+them in an upcoming release:
+
+- To get a coherent audit report, all commands producing files need to be ran
+  from the same folder, so that all paths are relative to that same folder.
 
 ## News
 
@@ -54,6 +54,17 @@ down the road, such as:
   before input files and `o:` before output files), instead of running it
   through a separate command, and still have the full audit trace generated.
   - Read more in [this blog post](https://bionics.it/posts/scicommander-0.3)!
+
+## Contents
+
+- [Features](#features)
+- [Roadmap](#roadmap)
+- [Limitations](#limitations)
+- [News](#news)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Example](#example)
+- [Quoting caveats](#quoting-caveats)
 
 ## Requirements
 
