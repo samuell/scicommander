@@ -251,16 +251,20 @@ echo " \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|";
 echo " |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  ";
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
-echo " Welcome to the SciCommander shell!"
-echo " Commands executed here will be logged for provenance."
-echo " (Exit with Ctrl+C)"
+echo " Welcome to the SciCommander shell! (Exit with Ctrl+C)"
+echo " For more info and help see: https://github.com/samuell/scicommander"
 echo;
-echo " See also the other sci sub-commands:"
-echo " ` + COLBRGREEN + `>` + COLRESET + ` sci help"
-echo " ` + COLBRGREEN + `>` + COLRESET + ` sci run <command>"
-echo " ` + COLBRGREEN + `>` + COLRESET + ` sci htmlize <file.au>"
-echo " ` + COLBRGREEN + `>` + COLRESET + ` sci shell (default)"
-echo " (These can be executed both outside or inside the shell)"
+echo " Run commands here just like normal. Most commands except some interactive"
+echo " ones will then be executed via SciCommander and logged for provenance."
+echo;
+echo " To force execution via SciCommander, prepend with '>':"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` >ls -l > files.txt"
+echo;
+echo " To force execution outside SciCommander e.g. to show output on screen, prepend with '!':"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` !cat files.txt"
+echo;
+echo " To create and open an HTML report from an audit file, run:"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` htmlize <files.txt.au>"
 echo;
 
 # Handle fake-prompt
