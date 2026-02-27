@@ -525,14 +525,30 @@ func checkMsg(err error, message string) {
 }
 
 func foldCommand(cmdStr string, newLineStr string, spaceStr string, backSlashStr string) (foldedCmd string) {
+	redirections := []string{
+		">",
+		">>",
+		"<",
+		"<<",
+		">|",
+		"<>",
+		"|",
+		"|&",
+		"2>",
+		"2>>",
+		"1>",
+		"1>>",
+		"&>",
+		"&>>",
+	}
 	foldedCmd = ""
 	foldNextLine := true
 	for i, cp := range strings.Split(cmdStr, " ") {
-		if string(cp[0]) == "-" {
+		if string(cp[0]) == "-" || slices.Contains(redirections, cp) {
 			foldedCmd += backSlashStr + " " + newLineStr + spaceStr + spaceStr + cp + " "
 			foldNextLine = false
 		} else {
-			if foldNextLine && i > 0 {
+			if foldNextLine && i > 0 && len(cp) > 16 {
 				foldedCmd += backSlashStr + " " + newLineStr + spaceStr + spaceStr + cp + " "
 			} else {
 				foldedCmd += cp + " "
