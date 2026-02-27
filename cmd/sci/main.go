@@ -19,14 +19,15 @@ import (
 )
 
 var (
-	COLRESET    = "\033[0m"
-	COLGREEN    = "\033[0;32m"
-	COLYELLOW   = "\033[0;33m"
-	COLBRGREEN  = "\033[1;32m"
-	COLBRBLUE   = "\033[1;34m"
-	COLBRYELLOW = "\033[1;33m"
-	COLGREY     = "\033[1;30m"
-	VERSION     = "0.5.1"
+	COLRESET                               = "\033[0m"
+	COLGREEN                               = "\033[0;32m"
+	COLYELLOW                              = "\033[0;33m"
+	COLBRGREEN                             = "\033[1;32m"
+	COLBRBLUE                              = "\033[1;34m"
+	COLBRYELLOW                            = "\033[1;33m"
+	COLGREY                                = "\033[1;30m"
+	VERSION                                = "0.5.1"
+	FILESVSTASKSFRAC_FOR_HORIZONTAL_LAYOUT = 5
 )
 
 func init() {
@@ -327,7 +328,15 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 func generateDot(auditInfos []AuditInfo) string {
 	cmdNodes, fileNodes, edges := generateGraph(auditInfos)
 
+	doHorizontalLayout := false
+	if len(fileNodes) > FILESVSTASKSFRAC_FOR_HORIZONTAL_LAYOUT*len(cmdNodes) {
+		doHorizontalLayout = true
+	}
+
 	dot := "DIGRAPH G {\n"
+	if doHorizontalLayout {
+		dot += "  rankdir=\"LR\";\n"
+	}
 	dot += "  node [shape=box, style=filled, fillcolor=lightgrey, fontname=monospace, penwidth=0, fontsize=11, pad=0];\n"
 	for _, cmd := range cmdNodes {
 		dot += f("  \"%s\" [fillcolor=\"#CCE2F1\"]\n", cmd)
@@ -356,6 +365,18 @@ func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []strin
 	cmdNodesSet := map[string]interface{}{}
 	fileNodesSet := map[string]interface{}{}
 	edgesSet := map[string]StringTuple{}
+
+	filesCnt := 0
+	for _, auditInfo := range auditInfos {
+		filesCnt += len(auditInfo.Inputs) + len(auditInfo.Outputs)
+	}
+
+	foldPaths := true
+	if filesCnt > FILESVSTASKSFRAC_FOR_HORIZONTAL_LAYOUT*len(auditInfos) {
+		// Don't fold paths, since we will then run a horizontal layout anyway
+		foldPaths = false
+	}
+
 	for _, auditInfo := range auditInfos {
 		commandStr := ""
 		if len(auditInfo.Executors) > 0 {
@@ -365,6 +386,9 @@ func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []strin
 		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Inputs) > 0 {
 			for _, input := range auditInfo.Inputs {
+				if foldPaths {
+					input = foldPath(input, "\\l", " ")
+				}
 				edge := StringTuple{string(input), commandStr}
 				edgesSet[edge.String()] = edge
 				fileNodesSet[string(input)] = nil
@@ -373,6 +397,9 @@ func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []strin
 		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Outputs) > 0 {
 			for _, output := range auditInfo.Outputs {
+				if foldPaths {
+					output = foldPath(output, "\\l", " ")
+				}
 				edge := StringTuple{commandStr, string(output)}
 				edgesSet[edge.String()] = edge
 				fileNodesSet[string(output)] = nil
@@ -499,6 +526,23 @@ func foldCommand(cmdStr string, newLineStr string, spaceStr string, backSlashStr
 	}
 	foldedCmd = foldedCmd + newLineStr
 	return foldedCmd
+}
+
+func foldPath(path string, newLineStr string, spaceStr string) (foldedPath string) {
+	foldedPath = ""
+	for i, cp := range strings.Split(path, "/") {
+		if i == 0 {
+			foldedPath += cp
+		} else {
+			totSpace := ""
+			for j := 1; j <= i+1; j++ {
+				totSpace += spaceStr
+			}
+			foldedPath += "/" + newLineStr + totSpace + cp
+		}
+	}
+	foldedPath += newLineStr
+	return foldedPath
 }
 
 func f(s string, v ...interface{}) string {
