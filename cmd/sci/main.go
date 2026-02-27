@@ -251,7 +251,7 @@ echo " \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|";
 echo " |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  ";
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
-echo " Welcome to the shell feature of SciCommander version ` + VERSION + ` (Exit with Ctrl+C)"
+echo " Welcome to the shell feature of SciCommander version ` + VERSION + ` (Exit with 'exit')"
 echo " For more info and help see: https://github.com/samuell/scicommander"
 echo;
 echo " Run commands here just like normal. Most commands except some interactive"
@@ -270,35 +270,35 @@ echo;
 # Handle fake-prompt
 history -r .scishell.hist
 while true; do
-	dirstr="[$(basename $(pwd))]"
-	read -ep "${dirstr} ` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
-	history -s "$CMD"
-    if [[ $CMD == $'\04' ]]; then
-        exit
-	elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
-		echo "` + COLYELLOW + `Executing outside scicommander: [${CMD:1}]` + COLRESET + `"
-		bash -c "${CMD:1}";
-	elif [[ "true" == $((echo $CMD | grep -Eq "^>.*") && echo true || echo false) ]]; then
-		sci run "${CMD:1}";
-	elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|rm|git|tig|tree|t|vim|emacs|nano|history|man)\>.*") && echo true || echo false) ]]; then
-		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+    dirstr="[$(basename $(pwd))]"
+    read -ep "${dirstr} ` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
+    history -s "$CMD"
+    if [[ $CMD == "" ]]; then
+        echo "(Exit with 'exit')";
+    elif [[ $CMD == "exit" ]]; then
+    break;
+    elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
+        echo "` + COLYELLOW + `Executing outside scicommander: [${CMD:1}]` + COLRESET + `"
+        bash -c "${CMD:1}";
+    elif [[ "true" == $((echo $CMD | grep -Eq "^>.*") && echo true || echo false) ]]; then
+        sci run "${CMD:1}";
+    elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|rm|git|tig|tree|t|vim|emacs|nano|history|man)\>.*") && echo true || echo false) ]]; then
+        echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
-	elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
-		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+    elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
+        echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
         bash -c "$CMD"
-	elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
-		echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
-		$CMD;
-    elif [[ $CMD == "" ]]; then
-		echo "(Exit with Ctrl+C)"
-	elif [[ $CMD =~ ^(help|htmlize|run|version|shell) ]]; then
-		sci $CMD;
+    elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
+        echo "` + COLYELLOW + `Executing outside scicommander: [$CMD]` + COLRESET + `"
+        $CMD;
+    elif [[ $CMD =~ ^(help|htmlize|run|version|shell) ]]; then
+       sci $CMD;
     else
         sci run "$CMD"
     fi
-	history -a .scishell.hist
+    history -a .scishell.hist
 done;
-echo "Exited SciCommander Shell"
+echo "` + COLYELLOW + `Exited SciCommander Shell` + COLRESET + `"
 `
 	os.Remove(tempScriptPath)
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)
