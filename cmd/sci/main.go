@@ -234,6 +234,9 @@ func runShell() {
 	tempScriptPath := ".scishell.bash"
 
 	shellCode := `#!/bin/bash -l
+# Catch Ctrl+C so we don't accidentally kill SciCommander.
+trap "echo \"WARNING: Ctrl+C is handled differently in SciCommander, and will not halt it. Exit with 'exit' instead.\"; echo \"Press ENTER to continue!\"" INT
+
 # Add some short-hand functions
 function ll() { ls -l; };
 function lltr() { ls -ltr; };
@@ -274,9 +277,11 @@ while true; do
     read -ep "${dirstr} ` + COLBRGREEN + `sci>` + COLRESET + ` " CMD
     history -s "$CMD"
     if [[ $CMD == "" ]]; then
-        echo "(Exit with 'exit')";
+	    echo "(Exit SciCommander with 'exit')";
     elif [[ $CMD == "exit" ]]; then
-    break;
+        break;
+    elif [[ $CMD == "sci" ]]; then
+		echo "Uh-oh! You can't run SciCommander inside SciCommander :-o"
     elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
         echo "` + COLYELLOW + `Executing outside scicommander: [${CMD:1}]` + COLRESET + `"
         bash -c "${CMD:1}";
@@ -298,8 +303,13 @@ while true; do
     fi
     history -a .scishell.hist
 done;
+echo;
 echo "` + COLYELLOW + `Exited SciCommander Shell` + COLRESET + `"
-`
+echo;
+echo "You can start it with:"
+echo "$ ` + COLBRGREEN + `sci` + COLRESET + `"
+echo;`
+
 	os.Remove(tempScriptPath)
 	wrtErr := os.WriteFile(tempScriptPath, []byte(shellCode), 0644)
 	checkMsg(wrtErr, f("Could not write %s", tempScriptPath))
