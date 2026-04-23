@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"cmp"
 	"encoding/json"
 	"errors"
@@ -85,14 +84,18 @@ func executeCommand(cmdStr string) {
 	})
 	checkMsg(err, "Could not walk folder structure before executing command!")
 
+	logFile, err := os.Create(".scicommander.log")
+	defer logFile.Close()
+	checkMsg(err, "Could not create log file")
+
 	// Execute the command
 	timeBefore := time.Now()
 
 	cmd := exec.Command("bash", "-c", cmdStr)
 
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
+	//var stdout, stderr bytes.Buffer
+	cmd.Stdout = logFile
+	cmd.Stderr = logFile
 
 	out(COLBRGREEN+"[>] Executing:"+COLRESET+" %s", cmdStr)
 	err = cmd.Run()
