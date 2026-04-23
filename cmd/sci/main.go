@@ -35,14 +35,14 @@ func init() {
 		flag.PrintDefaults()
 		fmt.Println(`Usage:
 sci run <command>
-sci htmlize <audit-file>
+sci tohtml <audit-file>
 sci shell`)
 	}
 }
 
 func main() {
 	flag.NewFlagSet("run", flag.ExitOnError)
-	flag.NewFlagSet("htmlize", flag.ExitOnError)
+	flag.NewFlagSet("tohtml", flag.ExitOnError)
 	flag.NewFlagSet("shell", flag.ExitOnError)
 	flag.Parse()
 
@@ -57,7 +57,7 @@ func main() {
 	case "run":
 		cmdStr := strings.Join(os.Args[2:], " ")
 		executeCommand(cmdStr)
-	case "htmlize":
+	case "tohtml":
 		auditPath := strings.Join(os.Args[2:], " ")
 		htmlPath := toHtml(auditPath)
 		openHtmlFile(htmlPath)
@@ -66,7 +66,7 @@ func main() {
 	case "shell":
 		runShell()
 	default:
-		fmt.Println("ERROR: Expected help, run, htmlize, version or shell")
+		fmt.Println("ERROR: Expected help, run, tohtml, version or shell")
 		os.Exit(2)
 	}
 }
@@ -269,7 +269,7 @@ echo " To force execution outside SciCommander e.g. to show output on screen, pr
 echo " ` + COLBRGREEN + `sci>` + COLRESET + ` ` + COLYELLOW + `!` + COLRESET + `cat files.txt"
 echo;
 echo " To create and open an HTML report from an audit file, run:"
-echo " ` + COLBRGREEN + `sci>` + COLRESET + ` htmlize <files.txt.au>"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` tohtml <files.txt.au>"
 echo;
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
@@ -300,7 +300,7 @@ while true; do
     elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
         echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
         $CMD;
-    elif [[ $CMD =~ ^(help|htmlize|run|version|shell) ]]; then
+    elif [[ $CMD =~ ^(help|tohtml|run|version|shell) ]]; then
        sci $CMD;
     else
         sci run "$CMD"
