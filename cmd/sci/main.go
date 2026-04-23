@@ -36,6 +36,7 @@ func init() {
 		fmt.Println(`Usage:
 sci run <command>
 sci tohtml <audit-file>
+sci toshell <audit-file>
 sci shell`)
 	}
 }
@@ -43,6 +44,7 @@ sci shell`)
 func main() {
 	flag.NewFlagSet("run", flag.ExitOnError)
 	flag.NewFlagSet("tohtml", flag.ExitOnError)
+	flag.NewFlagSet("toshell", flag.ExitOnError)
 	flag.NewFlagSet("shell", flag.ExitOnError)
 	flag.Parse()
 
@@ -61,6 +63,9 @@ func main() {
 		auditPath := strings.Join(os.Args[2:], " ")
 		htmlPath := toHtml(auditPath)
 		openHtmlFile(htmlPath)
+	case "toshell":
+		auditPath := strings.Join(os.Args[2:], " ")
+		toShell(auditPath)
 	case "version":
 		out("SciCommander %s", VERSION)
 	case "shell":
@@ -234,6 +239,20 @@ func openHtmlFile(htmlPath string) {
 	cmd := exec.Command("bash", "-c", "open "+htmlPath)
 	err := cmd.Run()
 	checkMsg(err, "Could not run command: "+cmd.String())
+}
+
+func toShell(auditPath string) string {
+	auditInfos := getAllUpstreamAuditInfos(auditPath)
+	outPath := auditPath[0 : len(auditPath)-3]
+
+	shellScript := auditInfosToShellScript(auditInfos, outPath)
+	shellScriptPath := auditPath + ".sh"
+
+	writeErr := ioutil.WriteFile(shellScriptPath, []byte(shellScript), 0644)
+	checkMsg(writeErr, f("Error writing file %s", shellScriptPath))
+
+	fmt.Printf("Wrote shell script to %s\n", shellScriptPath)
+	return shellScriptPath
 }
 
 func runShell() {
@@ -536,6 +555,25 @@ table td {
 	html += "</body>\n"
 	html += "</html>\n"
 	return html
+}
+
+func auditInfosToShellScript(auditInfos []AuditInfo, outPath string) (script string) {
+	script = "#!/bin/bash\n"
+
+	slices.SortFunc(auditInfos, func(a, b AuditInfo) int {
+		return cmp.Compare(a.Tags.StartTime.Format(time.RFC3339), b.Tags.StartTime.Format(time.RFC3339))
+	})
+
+	i := 1
+	for _, auditInfo := range auditInfos {
+		command := strings.Join(auditInfo.Executors[0].Command, " ")
+		sciRunCommand := f("sci run '%s'\n", command)
+		//command = foldCommand(command, "\n", " ", "\\")
+		script += f("\n# Command %d (%s)\n", i, strings.Split(command, " ")[0])
+		script += sciRunCommand
+		i += 1
+	}
+	return script
 }
 
 func executeExternalCommand(cmd string) {
