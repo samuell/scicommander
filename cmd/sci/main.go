@@ -6,7 +6,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -26,6 +25,7 @@ var (
 	COLBRBLUE                              = "\033[1;34m"
 	COLBRYELLOW                            = "\033[1;33m"
 	COLGREY                                = "\033[1;30m"
+	COLDIMGREY                             = "\x1b[90m"
 	VERSION                                = "0.5.1"
 	FILESVSTASKSFRAC_FOR_HORIZONTAL_LAYOUT = 5
 )
@@ -90,25 +90,15 @@ func executeCommand(cmdStr string) {
 	})
 	checkMsg(err, "Could not walk folder structure before executing command!")
 
-	now := time.Now().Format("20060102.150405")
-
-	logFile, err := os.Create(f(".scicommander-log.%s.log", now))
-	defer logFile.Close()
-	checkMsg(err, "Could not create log file")
-
 	// Execute the command
 	timeBefore := time.Now()
 
 	cmd := exec.Command("bash", "-c", cmdStr)
 
-	//var stdout, stderr bytes.Buffer
-	stdOutWriter := io.MultiWriter(os.Stdout, logFile)
-	stdErrWriter := io.MultiWriter(os.Stderr, logFile)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
-	cmd.Stdout = stdOutWriter
-	cmd.Stderr = stdErrWriter
-
-	out(COLBRGREEN+"[>] Executing:"+COLRESET+" %s", cmdStr)
+	sciOut(COLBRGREEN+"[>]"+COLRESET+COLDIMGREY+" Executing: "+COLRESET+"%s", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
@@ -122,6 +112,8 @@ func executeCommand(cmdStr string) {
 		return err
 	})
 	checkMsg(err, "Could not walk folder structure after executing command!")
+
+	sciOut(COLBRGREEN+f("[x]"+COLRESET+COLDIMGREY+" Finished (%s):"+COLRESET, fmtDuration(commandDuration))+" %s", cmdStr)
 
 	// Only store files which did not exist before and is not a directory
 	newPaths := []string{}
@@ -315,18 +307,18 @@ while true; do
     elif [[ $CMD == "sci" ]]; then
 		echo "` + COLYELLOW + `Uh-oh! You can't run SciCommander shell inside SciCommander shell :-o` + COLRESET + `"
     elif [[ "true" == $((echo $CMD | grep -Eq "^\!.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `[!] Executing externally: ${CMD:1}` + COLRESET + `"
+        echo "` + COLYELLOW + `[!]` + COLRESET + ` Executing externally: ${CMD:1}"
         bash -c "${CMD:1}";
     elif [[ "true" == $((echo $CMD | grep -Eq "^>.*") && echo true || echo false) ]]; then
         sci run "${CMD:1}";
     elif [[ "true" == $((echo $CMD | grep -Eq "^(ls|ll|pwd|lltr|rm|git|tig|tree|t|vim|emacs|nano|history|man)\>.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
+        echo "` + COLYELLOW + `[!]` + COLRESET + ` Executing externally: $CMD"
         bash -c "$CMD"
     elif [[ "true" == $((echo $CMD | grep -Eq ".*\<(less|more|bat)\>.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
+        echo "` + COLYELLOW + `[!]` + COLRESET + ` Executing externally: $CMD"
         bash -c "$CMD"
-    elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c)\>.*") && echo true || echo false) ]]; then
-        echo "` + COLYELLOW + `Executing externally: [$CMD]` + COLRESET + `"
+    elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c|clear)\>.*") && echo true || echo false) ]]; then
+        echo "` + COLYELLOW + `[!]` + COLRESET + ` Executing externally: $CMD"
         $CMD;
     elif [[ $CMD =~ ^(help|tohtml|run|version|shell) ]]; then
        sci $CMD;
@@ -642,8 +634,42 @@ func foldPath(path string, newLineStr string, spaceStr string) (foldedPath strin
 	return foldedPath
 }
 
+func fmtDuration(d time.Duration) string {
+	hours := int(d / time.Hour)
+	minutes := int(d % time.Hour / time.Minute)
+	secondsD := int(d % time.Minute / time.Second)
+	secondsF := float64(d%time.Minute) / float64(time.Second)
+	millis := int(d.Round(time.Millisecond) % time.Second / time.Millisecond)
+
+	strs := []string{}
+
+	if hours > 0 {
+		strs = append(strs, f("%dh", hours))
+	}
+
+	if minutes > 0 {
+		strs = append(strs, f("%dm", minutes))
+	}
+
+	if millis > 0 {
+		if secondsD > 0 {
+			strs = append(strs, f("%.1fs", secondsF))
+		} else {
+			strs = append(strs, f("%dms", millis))
+		}
+	} else {
+		strs = append(strs, f("%ds", secondsD))
+	}
+
+	return strings.Join(strs, " ")
+}
+
 func f(s string, v ...interface{}) string {
 	return fmt.Sprintf(s, v...)
+}
+
+func sciOut(s string, v ...interface{}) {
+	fmt.Printf(COLDIMGREY+"[SciCommander] "+COLRESET+s+"\n", v...)
 }
 
 func out(s string, v ...interface{}) {
