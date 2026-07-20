@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -84,7 +85,9 @@ func executeCommand(cmdStr string) {
 	})
 	checkMsg(err, "Could not walk folder structure before executing command!")
 
-	logFile, err := os.Create(".scicommander.log")
+	now := time.Now().Format("20060102.150405")
+
+	logFile, err := os.Create(f(".scicommander-log.%s.log", now))
 	defer logFile.Close()
 	checkMsg(err, "Could not create log file")
 
@@ -94,8 +97,11 @@ func executeCommand(cmdStr string) {
 	cmd := exec.Command("bash", "-c", cmdStr)
 
 	//var stdout, stderr bytes.Buffer
-	cmd.Stdout = logFile
-	cmd.Stderr = logFile
+	stdOutWriter := io.MultiWriter(os.Stdout, logFile)
+	stdErrWriter := io.MultiWriter(os.Stderr, logFile)
+
+	cmd.Stdout = stdOutWriter
+	cmd.Stderr = stdErrWriter
 
 	out(COLBRGREEN+"[>] Executing:"+COLRESET+" %s", cmdStr)
 	err = cmd.Run()
