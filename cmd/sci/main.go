@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -24,6 +26,8 @@ var (
 	COLBRGREEN                             = "\033[1;32m"
 	COLBRBLUE                              = "\033[1;34m"
 	COLBRYELLOW                            = "\033[1;33m"
+	COLRED                                 = "\033[0;31m"
+	COLBRRED                               = "\033[1;31m"
 	COLGREY                                = "\033[1;30m"
 	COLDIMGREY                             = "\x1b[90m"
 	VERSION                                = "0.5.1"
@@ -95,15 +99,18 @@ func executeCommand(cmdStr string) {
 
 	cmd := exec.Command("bash", "-c", cmdStr)
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	var stdoutBuf, stderrBuf bytes.Buffer
+
+	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
+	cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
 
 	sciOut(COLBRGREEN+"[>]"+COLRESET+COLDIMGREY+" Executing: "+COLRESET+"%s", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
 	commandDuration := timeAfter.Sub(timeBefore)
-	errMsg := f("Could not run command: %s\nSTDERR: %s\nSTDOUT: %s", cmdStr, cmd.Stderr, cmd.Stdout)
+
+	errMsg := f(COLBRRED+"[x]"+COLRESET+" ERROR: Could not run command: %s", cmdStr)
 	checkMsg(err, errMsg)
 
 	filesAfter := []string{}
