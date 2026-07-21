@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"cmp"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -99,10 +97,8 @@ func executeCommand(cmdStr string) {
 
 	cmd := exec.Command("bash", "-c", cmdStr)
 
-	var stdoutBuf, stderrBuf bytes.Buffer
-
-	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
-	cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	sciOut(COLBRGREEN+"[>]"+COLRESET+COLDIMGREY+" Executing: "+COLRESET+"%s", cmdStr)
 	err = cmd.Run()
