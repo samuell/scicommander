@@ -540,8 +540,8 @@ table td {
 		command = foldCommand(command, "<br>", "&nbsp;", "\\")
 		html += f("<tr><td style=\"background: #E6F5FF;\">%s</td>"+
 			"<td style=\"background: #CCE2F1;\">%s</td>"+
-			"<td style=\"background: #E6F5FF;\">%d ms</tr>"+
-			"\n", auditInfo.Tags.StartTime.Format(time.RFC3339), command, auditInfo.Tags.Duration.Milliseconds())
+			"<td style=\"background: #E6F5FF;\">%s</tr>"+
+			"\n", auditInfo.Tags.StartTime.Format(time.RFC3339), command, fmtDuration(auditInfo.Tags.Duration))
 	}
 	html += "</table>"
 	html += "<hr>\n"
