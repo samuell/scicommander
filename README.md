@@ -18,8 +18,15 @@ more reproducible and robust way, by doing the following things:
 
 ## Features
 
-- Auditing: Creating an audit log of most output files
-- Caching: Skipping executions where output files already exist
+- Caching: Skipping executions where output files already exist. This greatly
+  aids in iterative development of pipelines, as heavy operations early in the
+  script are not needlessly re-executed.
+- Auditing: Creating an audit log of all files generated via SciCommander.
+- HTML reports: Create an HTML audit report with a workflow graph, for all
+  output files created via SciCommander.
+  - See an example of an HTML report below:
+
+![Example SciCommander Audit report](scicommander-screenshot.png)
 
 ## Roadmap
 
