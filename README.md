@@ -148,7 +148,8 @@ Then you will see something like this:
  See also the other sci sub-commands:
  > sci help
  > sci run <command>
- > sci htmlize <file.au>
+ > sci tohtml <file.au>
+ > sci toshell <file.au>
  > sci shell (default)
  (These can be executed both outside or inside the shell)
 
@@ -175,7 +176,7 @@ sci> cat dna.compl.fa | rev > dna.compl.rev.fa
 
 ### Convert the final audit file to HTML and open in browser
 ```bash
-sci> htmlize dna.compl.rev.fa.au
+sci> tohtml dna.compl.rev.fa.au
 ```
 In other words, no extra syntax is needed.
 
@@ -223,7 +224,7 @@ To convert such an audit report into a nice HTML-report, you can run the
 following:
 
 ```bash
-sci htmlize <audit-file>
+sci tohtml <audit-file>
 ```
 
 ## Example
@@ -297,8 +298,19 @@ Now, you see that the last `.au` file is `dna.compl.rev.fa.au`.
 To convert this file to HTML and view it in a browser, you can do:
 
 ```bash
-sci htmlize dna.compl.rev.fa.au
+sci tohtml dna.compl.rev.fa.au
 ```
+
+Alternatively, to convert this file to a shell script that can reproduce this file again, execute:
+
+```bash
+sci toshell dna.compl.rev.fa.au
+```
+
+**Caveat:** Note that for both of these commands, you currently need to stand
+in the same folder as where you stood when the files were initially produced,
+in order for SciCommander to correctly locate upstream files (see issue
+[#29](https://github.com/samuell/scicommander/issues/29)).
 
 ## Quoting caveats
 

@@ -294,6 +294,9 @@ echo;
 echo " To create and open an HTML report from an audit file, run:"
 echo " ` + COLBRGREEN + `sci>` + COLRESET + ` tohtml <files.txt.au>"
 echo;
+echo " To create a shell file that reproduces the file corresponding to an audit file, run:"
+echo " ` + COLBRGREEN + `sci>` + COLRESET + ` toshell <files.txt.au>"
+echo;
 echo "` + COLBRBLUE + `>------------------------------------------------------>` + COLRESET + `"
 echo;
 
