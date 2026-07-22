@@ -40,9 +40,10 @@ them in an upcoming release:
 
 ## News
 
-- **June 22, 2026**: New releases: We just released
+- **July 22, 2026**: New release: We just released
   [0.6.0](https://github.com/samuell/scicommander/releases/tag/0.6.0) with much
-  improved usability.
+  improved usability. See the [release notes](https://github.com/samuell/scicommander/releases/tag/0.6.0)
+  for more info.
 - **Nov 13, 2025**: We recently released
   [0.5.0](https://github.com/samuell/scicommander/releases/tag/0.5.0) with much
   improved usability, and soon after
