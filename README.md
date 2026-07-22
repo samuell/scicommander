@@ -43,7 +43,7 @@ them in an upcoming release:
 - **July 22, 2026**: New release: We just released
   [0.6.0](https://github.com/samuell/scicommander/releases/tag/0.6.0) with much
   improved usability. See the [release notes](https://github.com/samuell/scicommander/releases/tag/0.6.0)
-  for more info.
+  for more info, and then a small bug fix in [0.6.1](https://github.com/samuell/scicommander/releases/tag/0.6.1).
 - **Nov 13, 2025**: We recently released
   [0.5.0](https://github.com/samuell/scicommander/releases/tag/0.5.0) with much
   improved usability, and soon after
@@ -147,7 +147,7 @@ Then you will see something like this:
  |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|
 >------------------------------------------------------>
 
- Welcome to the shell feature of SciCommander version 0.6.0 (Exit with 'exit')
+ Welcome to the shell feature of SciCommander version 0.6.1 (Exit with 'exit')
  For more info and help see: https://github.com/samuell/scicommander
 
  Run commands here just like normal. Most commands except some interactive
