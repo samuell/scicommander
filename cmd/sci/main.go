@@ -328,7 +328,7 @@ while true; do
     elif [[ "true" == $((echo $CMD | grep -Eq "^(cd|c|clear)\>.*") && echo true || echo false) ]]; then
         echo "` + COLYELLOW + `[!]` + COLRESET + ` Executing externally: $CMD"
         $CMD;
-    elif [[ $CMD =~ ^(help|tohtml|run|version|shell) ]]; then
+    elif [[ $CMD =~ ^(help|tohtml|toshell|run|version|shell) ]]; then
        sci $CMD;
     else
         sci run "$CMD"
