@@ -81,7 +81,7 @@ func main() {
 func executeCommand(cmdStr string) {
 	inFiles, existingOutFiles, _, _, _ := detectFiles(cmdStr)
 	if len(existingOutFiles) > 0 {
-		out(COLYELLOW+"[x] Skipping:"+COLRESET+" %s"+COLYELLOW+" (existing outputs)"+COLRESET, cmdStr)
+		sciOut("["+COLYELLOW+"x"+COLRESET+"] Skipping: %s"+COLYELLOW+" (existing outputs)"+COLRESET, cmdStr)
 		return
 	}
 
@@ -100,13 +100,13 @@ func executeCommand(cmdStr string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	sciOut(COLBRGREEN+"[>]"+COLRESET+COLDIMGREY+" Executing: "+COLRESET+"%s", cmdStr)
+	sciOut(COLDIMGREY+"["+COLBRGREEN+">"+COLRESET+COLDIMGREY+"] Executing: "+COLRESET+"%s", cmdStr)
 	err = cmd.Run()
 
 	timeAfter := time.Now()
 	commandDuration := timeAfter.Sub(timeBefore)
 
-	errMsg := f(COLBRRED+"[x]"+COLRESET+" ERROR: Could not run command: %s", cmdStr)
+	errMsg := f(COLDIMGREY+"["+COLBRRED+"!"+COLRESET+"] ERROR: Could not run command: %s", cmdStr)
 	checkMsg(err, errMsg)
 
 	filesAfter := []string{}
@@ -116,7 +116,7 @@ func executeCommand(cmdStr string) {
 	})
 	checkMsg(err, "Could not walk folder structure after executing command!")
 
-	sciOut(COLBRGREEN+f("[x]"+COLRESET+COLDIMGREY+" Finished (%s):"+COLRESET, fmtDuration(commandDuration))+" %s", cmdStr)
+	sciOut(COLDIMGREY+"["+COLBRGREEN+f("x"+COLRESET+COLDIMGREY+"] Finished (%s):"+COLRESET, fmtDuration(commandDuration))+" %s", cmdStr)
 
 	// Only store files which did not exist before and is not a directory
 	newPaths := []string{}
@@ -183,7 +183,7 @@ func detectFiles(cmdStr string) (inFiles []string, existingOutFiles []string, ne
 								}
 							}
 						} else {
-							out("Skipping dir: %s", walkPath)
+							sciOut("Skipping dir: %s", walkPath)
 						}
 						return err
 					})
