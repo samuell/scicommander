@@ -139,24 +139,35 @@ sci
 ```
 
 Then you will see something like this:
+
 ```bash
-  ___     _  ___                              _         
- / __| __(_)/ __|___ _ __  _ __  __ _ _ _  __| |___ _ _ 
+  ___     _  ___
+ / __| __(_)/ __|___ _ __  _ __  __ _ _ _  __| |___ _ _
  \__ \/ _| | (__/ _ \ '  \| '  \/ _' | ' \/ _' / -_) '_|
- |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|  
+ |___/\__|_|\___\___/_|_|_|_|_|_\__,_|_||_\__,_\___|_|
 >------------------------------------------------------>
 
- Welcome to the SciCommander shell!
- Commands executed here will be logged for provenance.
- (Exit with Ctrl+C)
+ Welcome to the shell feature of SciCommander version 0.6.0 (Exit with 'exit')
+ For more info and help see: https://github.com/samuell/scicommander
 
- See also the other sci sub-commands:
- > sci help
- > sci run <command>
- > sci tohtml <file.au>
- > sci toshell <file.au>
- > sci shell (default)
- (These can be executed both outside or inside the shell)
+ Run commands here just like normal. Most commands except some interactive
+ ones will then be executed via SciCommander and logged for provenance.
+
+>------------------------------------------------------>
+
+ To force execution via SciCommander, prepend with >:
+ sci> >ls -l > files.txt
+
+ To force execution outside SciCommander e.g. to show output on screen, prepend with !:
+ sci> !cat files.txt
+
+ To create and open an HTML report from an audit file, run:
+ sci> tohtml <files.txt.au>
+
+ To create a shell file that reproduces the file corresponding to an audit file, run:
+ sci> toshell <files.txt.au>
+
+>------------------------------------------------------>
 
 sci>
 ```
