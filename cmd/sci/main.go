@@ -27,7 +27,7 @@ var (
 	COLBRRED                               = "\033[1;31m"
 	COLGREY                                = "\033[1;30m"
 	COLDIMGREY                             = "\x1b[90m"
-	VERSION                                = "0.5.1"
+	VERSION                                = "0.6.0"
 	FILESVSTASKSFRAC_FOR_HORIZONTAL_LAYOUT = 5
 )
 

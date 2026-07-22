@@ -12,8 +12,11 @@ more reproducible and robust way, by doing the following things:
   aids in iterative development of pipelines, as heavy operations early in the
   script are not needlessly re-executed.
 - Auditing: Creating an audit log of all files generated via SciCommander.
+- Reproducing shell script: Create a shell script that reproduces a specific
+  file earlier created via SciCommander, by running exactly the commands used
+  to create it, using the `sci toshell` command.
 - HTML reports: Create an HTML audit report with a workflow graph, for all
-  output files created via SciCommander.
+  output files created via SciCommander, using the `sci tohtml` command.
   - See an example of an HTML report below:
 
 ![Example SciCommander Audit report](scicommander-screenshot.png)
@@ -23,8 +26,6 @@ more reproducible and robust way, by doing the following things:
 There are also some further features that are planned to be introduced further
 down the road, such as:
 
-- Bash script generation: Ability to generate a bash script with all the
-  commands used to create any specific output.
 - Atomic writes - Writes files to a temporary location (such as a sub-folder)
   until command is finished, so that you never end up with truncated data if a
   command crashes.
@@ -39,7 +40,10 @@ them in an upcoming release:
 
 ## News
 
-- **Nov 13, 2025**: New releases: We recently released
+- **June 22, 2026**: New releases: We just released
+  [0.6.0](https://github.com/samuell/scicommander/releases/tag/0.6.0) with much
+  improved usability.
+- **Nov 13, 2025**: We recently released
   [0.5.0](https://github.com/samuell/scicommander/releases/tag/0.5.0) with much
   improved usability, and soon after
   [0.5.1](https://github.com/samuell/scicommander/releases/tag/0.5.1) with an
