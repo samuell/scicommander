@@ -593,7 +593,6 @@ func auditInfosToShellScript(auditInfos []AuditInfo, outPath string) (script str
 		//command = foldCommand(command, "\n", " ", "\\")
 		script += f("\n# Command %d (%s)\n", i, strings.Split(command, " ")[0])
 		script += sciRunCommand
-		i += 1
 	}
 	return script
 }
