@@ -658,8 +658,10 @@ func fmtDuration(d time.Duration) string {
 	}
 
 	if millis > 0 {
-		if secondsD > 0 {
+		if secondsD >= 5 {
 			strs = append(strs, f("%.1fs", secondsF))
+		} else if secondsD > 0 {
+			strs = append(strs, f("%.3fs", secondsF))
 		} else {
 			strs = append(strs, f("%dms", millis))
 		}
