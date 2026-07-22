@@ -229,6 +229,58 @@ func TestDetectFiles(t *testing.T) {
 	}
 }
 
+func TestRunFromDifferentDirLevel(t *testing.T) {
+	//tmpDir := t.TempDir()
+	tmpDir := "/tmp/difflevel"
+	os.MkdirAll(tmpDir, 0777)
+	fmt.Printf("Moving into %v ...\n", tmpDir)
+	err := os.Chdir(tmpDir)
+	checkMsg(err, f("Could not enter temp dir %s", tmpDir))
+
+	// Arrange
+	inFiles := []string{
+		"foo.txt",
+		filepath.Join("bar", "baz.xyz"),
+		filepath.Join("bar", "xyz.abc"),
+	}
+	for _, f := range inFiles {
+		createDirAndFile(f)
+	}
+
+	cmd1 := "mkdir foo; echo hey > foo/hey.txt"
+	executeCommand(cmd1)
+	cmd2 := "mkdir foo/bar; cat foo/hey.txt | tr [a-z] [A-Z] > foo/bar/heyuppercase.txt"
+	executeCommand(cmd2)
+
+	toHtml("foo/bar/heyuppercase.txt.au")
+	// Check that the first command exists (which will mean it has properly parsed upstream commands)
+	checkForStringsInHtml("foo/bar/heyuppercase.txt.au.html", []string{cmd1}, t)
+
+	err = os.Chdir("foo")
+	checkMsg(err, "Could not enter foo")
+	toHtml("bar/heyuppercase.txt.au")
+	checkForStringsInHtml("bar/heyuppercase.txt.au.html", []string{cmd1}, t)
+
+	err = os.Chdir("bar")
+	checkMsg(err, "Could not enter bar")
+	toHtml("heyuppercase.txt.au")
+	checkForStringsInHtml("heyuppercase.txt.au.html", []string{cmd1}, t)
+}
+
+func checkForStringsInHtml(htmlPath string, strs []string, t *testing.T) {
+	htmlBytes, err := ioutil.ReadFile(htmlPath)
+	checkMsg(err, f("Could not read file %s", htmlPath))
+
+	// Clean out formatting added to make commands more compact
+	html := strings.ReplaceAll(string(htmlBytes), "\\ <br>&nbsp;&nbsp;", "")
+
+	for _, str := range strs {
+		if !strings.Contains(html, str) {
+			t.Fatal(f("Could not find string [%s] in html-file %s", str, htmlPath))
+		}
+	}
+}
+
 func createDirAndFile(filePath string) {
 	baseDir := filepath.Dir(filePath)
 	if _, err := os.Stat(baseDir); os.IsNotExist(err) {

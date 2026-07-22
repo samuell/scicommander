@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func NewAuditInfo(cmd string, inputs []string, outputs []string) *AuditInfo {
+func NewAuditInfo(outFilePath string, cmd string, inputs []string, outputs []string) *AuditInfo {
 	return &AuditInfo{
 		Inputs:  inputs,
 		Outputs: outputs,
@@ -13,7 +13,7 @@ func NewAuditInfo(cmd string, inputs []string, outputs []string) *AuditInfo {
 			Image:   "None",
 			Command: strings.Split(cmd, " "),
 		}},
-		Tags:     &SciTags{},
+		Tags:     &SciTags{OutPath: outFilePath},
 		Upstream: []AuditInfo{},
 	}
 }
@@ -31,9 +31,15 @@ type Executor struct {
 	Command []string `json:"command"`
 }
 
+// SciTags contains key-value tags, which is here used to store metadata about
+// command executions. Documentation for some of the fields are below:
+//   - DirDepth stores into on how many directory levels down an audit file is
+//     located, in relation to the command that produced it.
 type SciTags struct {
+	OutPath     string        `json:"output_path"`
 	StartTime   time.Time     `json:"start_time"`
 	EndTime     time.Time     `json:"end_time"`
 	Duration    time.Duration `json:"duration"`
 	DurationSec int           `json:"duration_s"`
+	DirDepth    int           `json:"dir_depth"`
 }

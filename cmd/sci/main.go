@@ -1,7 +1,6 @@
 package main
 
 import (
-	"cmp"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -129,10 +128,13 @@ func executeCommand(cmdStr string) {
 	for _, newFile := range newPaths {
 		newAuditFile := newFile + ".au"
 
-		auditInfo := NewAuditInfo(cmdStr, inFiles, newPaths)
+		dirDepth := strings.Count(newAuditFile, "/")
+
+		auditInfo := NewAuditInfo(newFile, cmdStr, inFiles, newPaths)
 		auditInfo.Tags.StartTime = timeBefore
 		auditInfo.Tags.EndTime = timeAfter
 		auditInfo.Tags.Duration = commandDuration
+		auditInfo.Tags.DirDepth = dirDepth
 
 		auditJson, jsonErr := json.MarshalIndent(auditInfo, "", "    ")
 		checkMsg(jsonErr, "Could not marshall JSON")
@@ -374,6 +376,31 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 	auditInfo := unmarshalAuditInfo(auditPath)
 	auditInfos[auditPath] = auditInfo
 
+	origDirDepth := auditInfo.Tags.DirDepth
+	currDirDepth := strings.Count(auditPath, "/")
+	dirDepthDiff := origDirDepth - currDirDepth
+
+	curDir, err := os.Getwd()
+	checkMsg(err, "Could not get the current directory")
+
+	if dirDepthDiff > 0 {
+		relPath := "."
+		for i := 0; i < dirDepthDiff; i++ {
+			relPath = "../" + relPath
+		}
+		err := os.Chdir(relPath)
+		checkMsg(err, f("Could not go up in the directory structure %d steps", dirDepthDiff))
+	} else if dirDepthDiff < 0 {
+		dirDepthDiffAbs := -dirDepthDiff
+		dirParts := strings.Split(auditPath, "/")
+		relPath := "."
+		for i := 0; i < dirDepthDiffAbs; i++ {
+			relPath = relPath + "/" + dirParts[i]
+		}
+		err := os.Chdir(relPath)
+		checkMsg(err, f("Could not go down in the directory structure %d steps", dirDepthDiffAbs))
+	}
+
 	// Recursively call this same method
 	for _, inputPath := range auditInfo.Inputs {
 		fullInputPath := inputPath + ".au"
@@ -382,6 +409,10 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 			auditInfos[inputPath] = inputAuditInfo
 		}
 	}
+
+	err = os.Chdir(curDir)
+	checkMsg(err, f("Could not change back to original directory %s", curDir))
+
 	return auditInfos
 }
 
@@ -487,10 +518,10 @@ func unmarshalAuditInfo(auditPath string) AuditInfo {
 		checkMsg(err, "Failed to unmarshal JSON file "+auditPath)
 		return auditInfo
 	} else if errors.Is(statErr, os.ErrNotExist) {
-		return *NewAuditInfo("", nil, nil)
+		return *NewAuditInfo("", "", nil, nil)
 	} else {
 		checkMsg(statErr, f("Error stat:ing file %s", auditPath))
-		return *NewAuditInfo("", nil, nil)
+		return *NewAuditInfo("", "", nil, nil)
 	}
 }
 
@@ -529,16 +560,13 @@ table td {
 	html += "</style>\n"
 	html += "</head>\n"
 	html += "<body>\n"
-	html += f("<h1>SciCommander Audit Report for %s<h1>\n", outPath)
+	html += f("<h1>SciCommander Audit Report for %s<h1>\n", auditInfos[0].Tags.OutPath)
 	html += "<hr>\n"
 	html += "<table>\n"
 	html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>\n"
 
-	slices.SortFunc(auditInfos, func(a, b AuditInfo) int {
-		return cmp.Compare(a.Tags.StartTime.Format(time.RFC3339), b.Tags.StartTime.Format(time.RFC3339))
-	})
-
-	for _, auditInfo := range auditInfos {
+	for i := len(auditInfos) - 1; i >= 0; i-- {
+		auditInfo := auditInfos[i]
 		command := strings.Join(auditInfo.Executors[0].Command, " ")
 		command = foldCommand(command, "<br>", "&nbsp;", "\\")
 		html += f("<tr><td style=\"background: #E6F5FF;\">%s</td>"+
@@ -558,12 +586,8 @@ table td {
 func auditInfosToShellScript(auditInfos []AuditInfo, outPath string) (script string) {
 	script = "#!/bin/bash\n"
 
-	slices.SortFunc(auditInfos, func(a, b AuditInfo) int {
-		return cmp.Compare(a.Tags.StartTime.Format(time.RFC3339), b.Tags.StartTime.Format(time.RFC3339))
-	})
-
-	i := 1
-	for _, auditInfo := range auditInfos {
+	for i := len(auditInfos) - 1; i >= 0; i-- {
+		auditInfo := auditInfos[i]
 		command := strings.Join(auditInfo.Executors[0].Command, " ")
 		sciRunCommand := f("sci run '%s'\n", command)
 		//command = foldCommand(command, "\n", " ", "\\")
