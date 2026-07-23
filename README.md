@@ -100,6 +100,30 @@ This is the recommended option for most users.
 7. Done. Now you should be able to execute the `sci` command in any newly
    opened bash shell.
 
+For doing this on Linux, here are the commands needed:
+
+#### Commands to download SciCommander on Linux
+
+```bash
+mkdir -p ~/bin
+cd ~/bin
+wget https://github.com/samuell/scicommander/releases/download/0.6.2/scicommander-0.6.2-linux-amd64.tar.gz
+tar -zxvf scicommander-0.6.2-linux-amd64.tar.gz
+mv linux/sci .
+```
+
+Note: Update the paths based on your operating system and the version wanted!
+
+#### Commands to make sure the bin folder is in your PATH variable
+
+This step only needs running once, like the first time you install
+SciCommander.
+
+```bash
+echo 'export PATH=~/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
 ### Using Go
 
 This method assumes that you have [installed the Go toolchain](https://go.dev/doc/install).
