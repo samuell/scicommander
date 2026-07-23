@@ -41,6 +41,9 @@ them in an upcoming release:
 
 ## News
 
+- **July 23, 2026**: We just released [0.6.2](https://github.com/samuell/scicommander/releases/tag/0.6.0)
+  with a fix for [a bug](https://github.com/samuell/scicommander/issues/34)
+  where the prompt would get unaligned after executing some complex commands.
 - **July 22, 2026**: New release: We just released
   [0.6.0](https://github.com/samuell/scicommander/releases/tag/0.6.0) with much
   improved usability. See the [release notes](https://github.com/samuell/scicommander/releases/tag/0.6.0)
