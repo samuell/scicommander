@@ -2,9 +2,10 @@ SciCommander
 ============
 
 [![Build and test Go code](https://github.com/samuell/scicommander/actions/workflows/go-ci.yml/badge.svg)](https://github.com/samuell/scicommander/actions/workflows/go-ci.yml)
+![Authorship: 100% Human](https://img.shields.io/badge/authorship_-100%25%20_human-green)
 
-This is a small tool that executes single shell commands in a scientifically
-more reproducible and robust way, by doing the following things:
+A small tool that executes single shell commands in a scientifically more
+reproducible and robust way, by doing the following things:
 
 ## Features
 
