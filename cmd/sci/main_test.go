@@ -67,14 +67,23 @@ func TestRunCommandWithDeepFolderStructure(t *testing.T) {
 		},
 	}
 
-	for _, tc := range tests {
+	for i, tc := range tests {
+		fmt.Println("------------------------------------------------")
+		fmt.Printf("Running test iteration %d\n", i)
+		fmt.Println("------------------------------------------------")
+
 		for _, cmd := range tc.commands {
 			executeCommand(cmd)
 		}
 		auditInfos := getAllUpstreamAuditInfos(tc.lastAuditInfo)
 		haveAuditCount := len(auditInfos)
+
 		if haveAuditCount != tc.wantAuditCount {
-			t.Fatal(f("Wrong number of audit infos found! Expected %d but found %d", tc.wantAuditCount, haveAuditCount))
+			lines := []string{}
+			for _, ai := range auditInfos {
+				lines = append(lines, fmt.Sprintf("%v : %v\n", ai.Executors[0].Command, ai.Tags.OutPath))
+			}
+			t.Fatal(f("Wrong number of audit infos found! Expected %d but found %d:\nAudit infos:\n%v", tc.wantAuditCount, haveAuditCount, lines))
 		}
 
 		htmlPath := toHtml(tc.lastAuditInfo)
@@ -206,11 +215,6 @@ func TestDetectFiles(t *testing.T) {
 		createDirAndFile(f)
 	}
 
-	wantOutFiles := []string{
-		"tee", // We can easily not know for sure if this is a command or an output file
-		"out.png",
-		filepath.Join("out", "someresult.tar.gz")}
-
 	type testCase struct {
 		command []string
 	}
@@ -218,21 +222,16 @@ func TestDetectFiles(t *testing.T) {
 	exampleCommand := "echo foo.txt bar/baz.xyz bar/xyz.abc | tee out.png > out/someresult.tar.gz"
 
 	// Act
-	haveInFiles, _, inferredNewOutFiles, _, _ := detectFiles(exampleCommand)
+	haveInFiles, _ := detectFiles(exampleCommand)
 
 	// Assert
 	if !reflect.DeepEqual(haveInFiles, wantInFiles) {
 		t.Fatalf("Wanted infiles %v but got %v\n", wantInFiles, haveInFiles)
 	}
-	if !reflect.DeepEqual(inferredNewOutFiles, wantOutFiles) {
-		t.Fatalf("Wanted outfiles %v but got %v\n", wantOutFiles, inferredNewOutFiles)
-	}
 }
 
 func TestRunFromDifferentDirLevel(t *testing.T) {
-	//tmpDir := t.TempDir()
-	tmpDir := "/tmp/difflevel"
-	os.MkdirAll(tmpDir, 0777)
+	tmpDir := t.TempDir()
 	fmt.Printf("Moving into %v ...\n", tmpDir)
 	err := os.Chdir(tmpDir)
 	checkMsg(err, f("Could not enter temp dir %s", tmpDir))

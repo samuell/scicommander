@@ -83,18 +83,13 @@ func executeCommand(cmdStr string) {
 	// ------------------------------------------------
 	// Detect files before command execution
 	// ------------------------------------------------
-	inFiles, existingOutFiles, _, _, _ := detectFiles(cmdStr)
+	inFiles, existingOutFiles := detectFiles(cmdStr)
 	if len(existingOutFiles) > 0 {
 		sciOut("["+COLYELLOW+"x"+COLRESET+"] Skipping: %s"+COLYELLOW+" (existing outputs)"+COLRESET, cmdStr)
 		return
 	}
 
-	filesBefore := []string{}
-	err := filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
-		filesBefore = append(filesBefore, path)
-		return err
-	})
-	checkMsg(err, "Could not walk folder structure before executing command!")
+	filesBefore := walkSubDirs("Could not walk folder structure before executing command!")
 
 	// ------------------------------------------------
 	// Execute command
@@ -107,7 +102,7 @@ func executeCommand(cmdStr string) {
 	cmd.Stderr = os.Stderr
 
 	sciOut(COLDIMGREY+"["+COLBRGREEN+">"+COLRESET+COLDIMGREY+"] Executing: "+COLRESET+"%s", cmdStr)
-	err = cmd.Run()
+	err := cmd.Run()
 
 	timeAfter := time.Now()
 	commandDuration := timeAfter.Sub(timeBefore)
@@ -118,12 +113,7 @@ func executeCommand(cmdStr string) {
 	// ------------------------------------------------
 	// Detect files after command execution
 	// ------------------------------------------------
-	filesAfter := []string{}
-	err = filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
-		filesAfter = append(filesAfter, path)
-		return err
-	})
-	checkMsg(err, "Could not walk folder structure after executing command!")
+	filesAfter := walkSubDirs("Could not walk folder structure after executing command!")
 
 	sciOut(COLDIMGREY+"["+COLBRGREEN+f("x"+COLRESET+COLDIMGREY+"] Finished (%s):"+COLRESET, fmtDuration(commandDuration))+" %s", cmdStr)
 
@@ -159,65 +149,73 @@ func executeCommand(cmdStr string) {
 	}
 }
 
-func detectFiles(cmdStr string) (inFiles []string, existingOutFiles []string, newOutFiles []string, existingOutDirs []string, newOutDirs []string) {
-	// TODO: newOutfiles not used
-	// TODO: newOutDirs not used
+func walkSubDirs(errMsg string) []string {
+	filesFound := []string{}
+	err := filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
+		if !dirEntry.IsDir() {
+			filesFound = append(filesFound, path)
+		}
+		return err
+	})
+	checkMsg(err, errMsg)
+	return filesFound
+}
+
+func detectFiles(cmdStr string) (inFiles []string, existingOutFiles []string) {
 	cmdParts := strings.Split(cmdStr, " ")
 	cmdArgs := cmdParts[1:]
 
-	filtered := []string{}
+	cmdArgsFiltered := []string{}
 	nonPaths := []string{">", "|", ">>", ">>>", "<", "<<", "<<<"}
 	for _, ca := range cmdArgs {
 		if !slices.Contains(nonPaths, ca) {
-			filtered = append(filtered, ca)
+			cmdArgsFiltered = append(cmdArgsFiltered, ca)
 		}
 	}
 
-	for _, cmdPart := range filtered {
-		if stat, err := os.Stat(cmdPart); os.IsNotExist(err) {
-			// If the file does not exist, treat as an (non-existent) output file (we don't know if it is an output file or dir)
-			newOutFiles = append(newOutFiles, cmdPart)
-		} else {
-			// If the file does exist, check if it has an audit file
-			auditPath := cmdPart + ".au"
-			if _, err := os.Stat(auditPath); os.IsNotExist(err) {
-				// If it lacks an audit file, treat as input file
-				inFiles = append(inFiles, cmdPart)
+	for _, cmdArg := range cmdArgsFiltered {
+		exists, isDir := fileExists(cmdArg)
+		auditPath := cmdArg + ".au"
+		hasAuditFile, _ := fileExists(auditPath)
+
+		if exists && !isDir && !hasAuditFile {
+			inFiles = append(inFiles, cmdArg)
+		}
+
+		if exists && !isDir && hasAuditFile {
+			if auditInfoHasSameCommand(cmdArg+".au", cmdStr) {
+				existingOutFiles = append(existingOutFiles, cmdArg)
 			} else {
-				// If it has an audit file, check if the command is the same
-				if stat.IsDir() {
-					existingOutDirs = append(existingOutDirs, cmdPart)
-					// Walk the directory and check for any auditInfos with the same command as ours
-					err := filepath.WalkDir(cmdPart, func(walkPath string, dirEntry fs.DirEntry, err error) error {
-						walkPathStat, statErr := os.Stat(walkPath)
-						checkMsg(statErr, f("Could not stat: %s", walkPath))
-						if !walkPathStat.IsDir() {
-							auPath := walkPath + ".au"
-							if _, statErr := os.Stat(auPath); !os.IsNotExist(statErr) {
-								detectedAuditInfo := unmarshalAuditInfo(auPath)
-								detectedCommand := strings.Join(detectedAuditInfo.Executors[0].Command, " ")
-								if detectedCommand == cmdStr {
-									// If the audit info has the same command, detect as an existing outfile
-									existingOutFiles = append(existingOutFiles, walkPath)
-								}
-							}
-						} else {
-							sciOut("Skipping dir: %s", walkPath)
-						}
-						return err
-					})
-					checkMsg(err, f("Could not walk directory: %s", cmdPart))
-				} else {
-					detectedAuditInfo := unmarshalAuditInfo(auditPath)
-					detectedCommand := strings.Join(detectedAuditInfo.Executors[0].Command, " ")
-					if detectedCommand == cmdStr {
-						// If the audit info has the same command, detect as an existing outfile
-						existingOutFiles = append(existingOutFiles, cmdPart)
-					}
-					inFiles = append(inFiles, cmdPart)
-				}
+				inFiles = append(inFiles, cmdArg)
 			}
 		}
+
+		if exists && isDir {
+			// Walk the directory and check for any auditInfos with the same command as ours
+			err := filepath.WalkDir(cmdArg, func(walkPath string, dirEntry fs.DirEntry, err error) error {
+				if !dirEntry.IsDir() {
+					auPath := walkPath + ".au"
+					auPathExists, _ := fileExists(auPath)
+					if auPathExists {
+						if auditInfoHasSameCommand(auPath, cmdStr) {
+							existingOutFiles = append(existingOutFiles, cmdArg)
+						}
+					}
+				}
+				return err
+			})
+			checkMsg(err, f("Could not walk directory: %s", cmdArg))
+		}
+	}
+	return
+}
+
+func fileExists(filePath string) (exists bool, isDir bool) {
+	if stat, err := os.Stat(filePath); err == nil {
+		if stat.IsDir() {
+			isDir = true
+		}
+		exists = true
 	}
 	return
 }
@@ -524,6 +522,12 @@ func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []strin
 		edges = append(edges, edge)
 	}
 	return
+}
+
+func auditInfoHasSameCommand(auditPath string, cmd string) bool {
+	detectedAuditInfo := unmarshalAuditInfo(auditPath)
+	detectedCommand := strings.Join(detectedAuditInfo.Executors[0].Command, " ")
+	return detectedCommand == cmd
 }
 
 func unmarshalAuditInfo(auditPath string) AuditInfo {
