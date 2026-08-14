@@ -80,6 +80,9 @@ func main() {
 }
 
 func executeCommand(cmdStr string) {
+	// ------------------------------------------------
+	// Detect files before command execution
+	// ------------------------------------------------
 	inFiles, existingOutFiles, _, _, _ := detectFiles(cmdStr)
 	if len(existingOutFiles) > 0 {
 		sciOut("["+COLYELLOW+"x"+COLRESET+"] Skipping: %s"+COLYELLOW+" (existing outputs)"+COLRESET, cmdStr)
@@ -93,7 +96,9 @@ func executeCommand(cmdStr string) {
 	})
 	checkMsg(err, "Could not walk folder structure before executing command!")
 
-	// Execute the command
+	// ------------------------------------------------
+	// Execute command
+	// ------------------------------------------------
 	timeBefore := time.Now()
 
 	cmd := exec.Command("bash", "-c", cmdStr)
@@ -110,6 +115,9 @@ func executeCommand(cmdStr string) {
 	errMsg := f(COLDIMGREY+"["+COLBRRED+"!"+COLRESET+"] ERROR: Could not run command: %s", cmdStr)
 	checkMsg(err, errMsg)
 
+	// ------------------------------------------------
+	// Detect files after command execution
+	// ------------------------------------------------
 	filesAfter := []string{}
 	err = filepath.WalkDir(".", func(path string, dirEntry fs.DirEntry, err error) error {
 		filesAfter = append(filesAfter, path)
@@ -119,7 +127,9 @@ func executeCommand(cmdStr string) {
 
 	sciOut(COLDIMGREY+"["+COLBRGREEN+f("x"+COLRESET+COLDIMGREY+"] Finished (%s):"+COLRESET, fmtDuration(commandDuration))+" %s", cmdStr)
 
-	// Only store files which did not exist before and is not a directory
+	// ------------------------------------------------
+	// Detect new files
+	// ------------------------------------------------
 	newPaths := []string{}
 	for _, file := range filesAfter {
 		if !slices.Contains(filesBefore, file) {
@@ -127,6 +137,9 @@ func executeCommand(cmdStr string) {
 		}
 	}
 
+	// ------------------------------------------------
+	// Write audit files
+	// ------------------------------------------------
 	for _, newFile := range newPaths {
 		newAuditFile := newFile + ".au"
 
@@ -147,6 +160,8 @@ func executeCommand(cmdStr string) {
 }
 
 func detectFiles(cmdStr string) (inFiles []string, existingOutFiles []string, newOutFiles []string, existingOutDirs []string, newOutDirs []string) {
+	// TODO: newOutfiles not used
+	// TODO: newOutDirs not used
 	cmdParts := strings.Split(cmdStr, " ")
 	cmdArgs := cmdParts[1:]
 
