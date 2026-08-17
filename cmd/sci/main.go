@@ -85,7 +85,8 @@ func executeCommand(cmdStr string) {
 	// ------------------------------------------------
 	inFiles, existingOutFiles := detectFiles(cmdStr)
 	if len(existingOutFiles) > 0 {
-		sciOut("["+COLYELLOW+"x"+COLRESET+"] Skipping: %s"+COLYELLOW+" (existing outputs)"+COLRESET, cmdStr)
+		existingOutputPaths := strings.Join(existingOutFiles, " ")
+		sciOut("["+COLYELLOW+"x"+COLRESET+"] Skipping: %s"+COLYELLOW+" (existing outputs: [%s])"+COLRESET, cmdStr, existingOutputPaths)
 		return
 	}
 
