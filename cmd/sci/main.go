@@ -322,7 +322,7 @@ echo;
 history -r .scishell.hist
 while true; do
     dirstr="[$(basename $(pwd))]"
-    read -ep "${dirstr} ` + IGNORE_NONPRINTING_START + COLBRGREEN + IGNORE_NONPRINTING_END + `sci>` + IGNORE_NONPRINTING_START + COLRESET + IGNORE_NONPRINTING_END + ` " CMD
+    read -erp "${dirstr} ` + IGNORE_NONPRINTING_START + COLBRGREEN + IGNORE_NONPRINTING_END + `sci>` + IGNORE_NONPRINTING_START + COLRESET + IGNORE_NONPRINTING_END + ` " CMD
     history -s "$CMD"
     if [[ $CMD == "" ]]; then
 	    echo "(Exit SciCommander with 'exit')";
