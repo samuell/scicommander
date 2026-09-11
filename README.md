@@ -41,6 +41,8 @@ them in an upcoming release:
 
 ## News
 
+- **August 27, 2026:** SciCommander is
+  [now available on conda-forge](https://anaconda.org/channels/conda-forge/packages/scicommander/overview)!
 - **July 23, 2026**: We just released [0.6.2](https://github.com/samuell/scicommander/releases/tag/0.6.0)
   with a fix for [a bug](https://github.com/samuell/scicommander/issues/34)
   where the prompt would get unaligned after executing some complex commands.
@@ -84,6 +86,26 @@ them in an upcoming release:
   [GraphViz](https://graphviz.org/) and its `dot` command.
 
 ## Installation
+
+### From conda-forge
+
+The easiest way to install SciCommander is arguably via [conda-forge](https://conda-forge.org/).
+
+In a [conda](https://anaconda.org/anaconda/conda) environment:
+
+```bash
+conda install -c conda-forge scicommander
+```
+
+(For a mamba environment, replace `conda` with `mamba`).
+
+And in a [pixi](https://pixi.sh/) environment:
+
+```bash
+pixi add scicommander
+```
+
+(Pixi uses conda-forge by default)
 
 ### Downloading a pre-built binary
 
