@@ -112,6 +112,14 @@ func executeCommand(cmdStr string) {
 	timeAfter := time.Now()
 	commandDuration := timeAfter.Sub(timeBefore)
 
+	exitCode := 0
+	if err != nil {
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) {
+			exitCode = exitErr.ExitCode()
+		}
+	}
+
 	errMsg := f(COLDIMGREY+"["+COLBRRED+"!"+COLRESET+"] ERROR: Could not run command: %s", cmdStr)
 	checkMsg(err, errMsg)
 
@@ -146,10 +154,8 @@ func executeCommand(cmdStr string) {
 		dirDepth := strings.Count(newAuditFile, "/")
 
 		auditInfo := NewAuditInfo(newFile, cmdStr, inFiles, newPaths)
-		auditInfo.Tags.StartTime = timeBefore
-		auditInfo.Tags.EndTime = timeAfter
-		auditInfo.Tags.Duration = commandDuration
-		auditInfo.Tags.DirDepth = dirDepth
+		auditInfo.SetExecutionInfo(timeBefore, timeAfter, exitCode, dirDepth)
+		auditInfo.SetOutputFiles(newPaths)
 
 		auditJson, jsonErr := json.MarshalIndent(auditInfo, "", "    ")
 		checkMsg(jsonErr, "Could not marshall JSON")
@@ -393,7 +399,7 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 	auditInfo := unmarshalAuditInfo(auditPath)
 	auditInfos[auditPath] = auditInfo
 
-	origDirDepth := auditInfo.Tags.DirDepth
+	origDirDepth := auditInfo.DirDepth()
 	currDirDepth := strings.Count(auditPath, "/")
 	dirDepthDiff := origDirDepth - currDirDepth
 
@@ -577,7 +583,7 @@ table td {
 	html += "</style>\n"
 	html += "</head>\n"
 	html += "<body>\n"
-	html += f("<h1>SciCommander Audit Report for %s<h1>\n", auditInfos[0].Tags.OutPath)
+	html += f("<h1>SciCommander Audit Report for %s<h1>\n", auditInfos[0].OutPath())
 	html += "<hr>\n"
 	html += "<table>\n"
 	html += "<tr><th>Start time</th><th>Command</th><th>Duration</th></tr>\n"
@@ -589,7 +595,7 @@ table td {
 		html += f("<tr><td style=\"background: #E6F5FF;\">%s</td>"+
 			"<td style=\"background: #CCE2F1;\">%s</td>"+
 			"<td style=\"background: #E6F5FF;\">%s</tr>"+
-			"\n", auditInfo.Tags.StartTime.Format(time.RFC3339), command, fmtDuration(auditInfo.Tags.Duration))
+			"\n", auditInfo.StartTime().Format(time.RFC3339), command, fmtDuration(auditInfo.Duration()))
 	}
 	html += "</table>"
 	html += "<hr>\n"
