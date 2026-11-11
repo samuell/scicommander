@@ -418,11 +418,11 @@ func getInputAuditInfos(auditPath string, baseDir string) map[string]AuditInfo {
 	}
 
 	// Recursively call this same method
-	for _, inputPath := range auditInfo.Inputs {
-		fullInputPath := inputPath + ".au"
+	for _, input := range auditInfo.Inputs {
+		fullInputPath := input.Path + ".au"
 		inputAuditInfos := getInputAuditInfos(fullInputPath, baseDir)
-		for inputPath, inputAuditInfo := range inputAuditInfos {
-			auditInfos[inputPath] = inputAuditInfo
+		for _input, inputAuditInfo := range inputAuditInfos {
+			auditInfos[_input] = inputAuditInfo
 		}
 	}
 
@@ -493,23 +493,25 @@ func generateGraph(auditInfos []AuditInfo) (cmdNodes []string, fileNodes []strin
 		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Inputs) > 0 {
 			for _, input := range auditInfo.Inputs {
+				var inputPath string
 				if foldPaths {
-					input = foldPath(input, "\\l", " ")
+					inputPath = foldPath(input.Path, "\\l", " ")
 				}
-				edge := StringTuple{string(input), commandStr}
+				edge := StringTuple{string(inputPath), commandStr}
 				edgesSet[edge.String()] = edge
-				fileNodesSet[string(input)] = nil
+				fileNodesSet[string(inputPath)] = nil
 			}
 		}
 		cmdNodesSet[commandStr] = nil
 		if len(auditInfo.Outputs) > 0 {
 			for _, output := range auditInfo.Outputs {
+				var outputPath string
 				if foldPaths {
-					output = foldPath(output, "\\l", " ")
+					outputPath = foldPath(output.Path, "\\l", " ")
 				}
-				edge := StringTuple{commandStr, string(output)}
+				edge := StringTuple{commandStr, string(outputPath)}
 				edgesSet[edge.String()] = edge
-				fileNodesSet[string(output)] = nil
+				fileNodesSet[string(outputPath)] = nil
 			}
 		}
 	}

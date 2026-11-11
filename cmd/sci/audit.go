@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-func NewAuditInfo(outFilePath string, cmd string, inputs []string, outputs []string) *AuditInfo {
-	inputs := &[]AuditTarget{}
-	for _, inputStr := range inputs {
-		inputs := append(inputs, NewAuditTarget(inputStr, inputStr))
+func NewAuditInfo(outFilePath string, cmd string, inPaths []string, outPaths []string) *AuditInfo {
+	inputs := []*AuditTarget{}
+	for _, inPath := range inPaths {
+		inputs = append(inputs, NewAuditTarget(inPath, inPath))
 	}
-	outputs := &[]AuditTarget{}
-	for _, outputStr := range outputs {
-		outputs := append(outputs, NewAuditTarget(outputStr, outputStr))
+	outputs := []*AuditTarget{}
+	for _, outPath := range outPaths {
+		outputs = append(outputs, NewAuditTarget(outPath, outPath))
 	}
 	return &AuditInfo{
 		Inputs:  inputs,
@@ -27,18 +27,19 @@ func NewAuditInfo(outFilePath string, cmd string, inputs []string, outputs []str
 }
 
 type AuditInfo struct {
-	Inputs    []AuditTarget    `json:"inputs"`
-	Outputs   []AuditTarget    `json:"outputs"`
-	Executors []*Executor `json:"executors"`
-	Tags      *SciTags    `json:"tags"`
-	Upstream  []AuditInfo `json:"upstream"`
+	Inputs    []*AuditTarget `json:"inputs"`
+	Outputs   []*AuditTarget `json:"outputs"`
+	Executors []*Executor    `json:"executors"`
+	Tags      *SciTags       `json:"tags"`
+	Upstream  []AuditInfo    `json:"upstream"`
 }
 
 func NewAuditTarget(url string, path string) *AuditTarget {
 	return &AuditTarget{
-		Url: url,
+		Url:  url,
 		Path: path,
 		Type: "FILE",
+	}
 }
 
 type AuditTarget struct {
