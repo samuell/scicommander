@@ -6,6 +6,14 @@ import (
 )
 
 func NewAuditInfo(outFilePath string, cmd string, inputs []string, outputs []string) *AuditInfo {
+	inputs := &[]AuditTarget{}
+	for _, inputStr := range inputs {
+		inputs := append(inputs, NewAuditTarget(inputStr, inputStr))
+	}
+	outputs := &[]AuditTarget{}
+	for _, outputStr := range outputs {
+		outputs := append(outputs, NewAuditTarget(outputStr, outputStr))
+	}
 	return &AuditInfo{
 		Inputs:  inputs,
 		Outputs: outputs,
@@ -19,11 +27,24 @@ func NewAuditInfo(outFilePath string, cmd string, inputs []string, outputs []str
 }
 
 type AuditInfo struct {
-	Inputs    []string    `json:"inputs"`
-	Outputs   []string    `json:"outputs"`
+	Inputs    []AuditTarget    `json:"inputs"`
+	Outputs   []AuditTarget    `json:"outputs"`
 	Executors []*Executor `json:"executors"`
 	Tags      *SciTags    `json:"tags"`
 	Upstream  []AuditInfo `json:"upstream"`
+}
+
+func NewAuditTarget(url string, path string) *AuditTarget {
+	return &AuditTarget{
+		Url: url,
+		Path: path,
+		Type: "FILE",
+}
+
+type AuditTarget struct {
+	Url  string `json:url`
+	Path string `json:path`
+	Type string `json:type`
 }
 
 type Executor struct {
